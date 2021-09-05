@@ -6,7 +6,7 @@ const tree = new Quadtree(new Boundary(new Point(0, 0), new Point(8, 8)));
 
 const n1 = new Element(new Point(1, 1), '1');
 const n2 = new Element(new Point(2, 2), '2');
-const n3 = new Element(new Point(4, 4), '2');
+const n3 = new Element(new Point(4, 4), '3');
 const n4 = new Element(new Point(6, 6), '4');
 
 tree.insert(n1);

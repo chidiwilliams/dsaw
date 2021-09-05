@@ -108,6 +108,14 @@ class Boundary {
  */
 class Element {
   /**
+   * Whether this element has been checked by the search function.
+   * (Used only for illustrative purposes)
+   *
+   * @memberof Quadtree
+   */
+  checked = false;
+
+  /**
    * Creates an instance of Element.
    *
    * @param {Point} position
@@ -172,7 +180,7 @@ class Quadtree {
 
   /**
    * Whether this node has been checked by the search function.
-   * Used only for illustrative purposes.
+   * (Used only for illustrative purposes)
    *
    * @memberof Quadtree
    */

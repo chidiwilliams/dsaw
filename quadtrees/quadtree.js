@@ -14,6 +14,27 @@ class Point {
     this.x = x;
     this.y = y;
   }
+
+  /**
+   * Returns the distance of this point to p
+   *
+   * @param {Point} p
+   * @memberof Point
+   */
+  distance(p) {
+    return Math.sqrt(Math.pow(this.x - p.x, 2) + Math.pow(this.y - p.y, 2));
+  }
+
+  /**
+   * Returns the midpoint between this point and p
+   *
+   * @param {Point} p
+   * @returns
+   * @memberof Point
+   */
+  midpoint(p) {
+    return new Point((this.x + p.x) / 2, (this.y + p.y) / 2);
+  }
 }
 
 /**
@@ -67,6 +88,16 @@ class Boundary {
       // not too up
       boundary.bottomRight.y >= this.topLeft.y
     );
+  }
+
+  /**
+   * Returns the midpoint of the boundary
+   *
+   * @returns
+   * @memberof Boundary
+   */
+  midpoint() {
+    return this.topLeft.midpoint(this.bottomRight);
   }
 }
 
@@ -138,6 +169,14 @@ class Quadtree {
    * @memberof Quadtree
    */
   bottomRightTree = null;
+
+  /**
+   * Whether this node has been checked by the search function.
+   * Used only for illustrative purposes.
+   *
+   * @memberof Quadtree
+   */
+  checked = false;
 
   /**
    * Creates an instance of Quadtree.
@@ -255,6 +294,61 @@ class Quadtree {
       .concat(this.bottomLeftTree.search(searchBoundary))
       .concat(this.topRightTree.search(searchBoundary))
       .concat(this.bottomRightTree.search(searchBoundary));
+  }
+
+  /**
+   * Returns the closest element to the given point
+   *
+   * @param {Point} point
+   * @memberof Quadtree
+   */
+  closest(
+    point,
+    closest = { element: null, distance: this.boundary.topLeft.distance(this.boundary.bottomRight) }
+  ) {
+    this.checked = true;
+
+    // If the boundary is farther than the closest point, no need to check here or any of the subtrees
+    if (
+      Math.abs(point.x - this.boundary.topLeft.x) > closest.distance ||
+      Math.abs(point.x - this.boundary.bottomRight.x) > closest.distance ||
+      Math.abs(point.y - this.boundary.topLeft.y) > closest.distance ||
+      Math.abs(point.y - this.boundary.bottomRight.y) > closest.distance
+    ) {
+      return closest;
+    }
+
+    // Not yet subdivided, return the closest element in this node
+    if (!this.topLeftTree) {
+      this.elements.forEach((element) => {
+        const distance = element.position.distance(point);
+        if (distance < closest.distance) {
+          closest.element = element;
+          closest.distance = distance;
+        }
+        element.checked = true;
+      });
+      return closest;
+    }
+
+    // Since this node has already been subdivided, check all its child nodes
+    // But first, sort the child nodes according to their distance from the
+    // search point and check the closest ones first. The closer ones will be
+    // more likely to have elements closer to the search point, which would
+    // help us skip larger nodes later on.
+    const subtrees = [
+      this.topLeftTree,
+      this.bottomLeftTree,
+      this.topRightTree,
+      this.bottomRightTree,
+    ];
+    subtrees.sort(
+      (a, b) => point.distance(a.boundary.midpoint()) - point.distance(b.boundary.midpoint())
+    );
+    subtrees.forEach((subTree) => {
+      closest = subTree.closest(point, closest);
+    });
+    return closest;
   }
 }
 

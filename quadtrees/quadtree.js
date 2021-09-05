@@ -1,5 +1,5 @@
 /**
- * A Point holds (x,y) coordinates
+ * A Point holds (x,y) coordinates.
  *
  * @class Point
  */
@@ -71,7 +71,7 @@ class Boundary {
 }
 
 /**
- * An Element contains some data and its position in space
+ * An Element is a unit of spatial information.
  *
  * @class Element
  */
@@ -90,7 +90,9 @@ class Element {
 }
 
 /**
- * A Quadtree
+ * A Quadtree is a tree where each node has exactly four children.
+ * Each node can contain elements up until `Quadtree.NODE_CAPACITY`,
+ * after which the node will be further subdivided into four children.
  *
  * @class Quadtree
  */

@@ -55,9 +55,9 @@ function insert(node, point) {
     subdivide(node);
   }
 
-  // Insert the point into its correct child node. We can try inserting into all the sub-trees
-  // The wrong ones (where the point's position is outside the sub-tree's boundary) would
-  // simply return false, until we find the correct sub-tree.
+  // Insert the point into its correct child node. We can try inserting into all the child nodes
+  // The wrong ones (where the point's position is outside the child node's boundary) would
+  // simply return false, until we find the correct child node.
   if (insert(node.topLeftChild, point)) return true;
   if (insert(node.bottomLeftChild, point)) return true;
   if (insert(node.topRightChild, point)) return true;
@@ -91,7 +91,7 @@ function contains(boundary, point) {
  * @param {Quadtree} node
  */
 function subdivide(node) {
-  // Create the four sub-trees
+  // Create the four child nodes
   const { topLeft, bottomRight } = node.boundary;
   const midPoint = {
     x: (topLeft.x + bottomRight.x) / 2,
@@ -128,9 +128,9 @@ function subdivide(node) {
   };
 
   // Move the points in the node to the child node that should contain the point.
-  // Again, we can try inserting each point into all the sub-trees. The wrong ones
-  // (where the point's position is outside the sub-tree's boundary) would simply
-  // return false, until we find the correct sub-tree.
+  // Again, we can try inserting each point into all the child nodes. The wrong ones
+  // (where the point's position is outside the child node's boundary) would simply
+  // return false, until we find the correct child node.
   node.points.forEach((point) => {
     if (insert(node.topLeftChild, point)) return;
     if (insert(node.bottomLeftChild, point)) return;

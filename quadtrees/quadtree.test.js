@@ -1,41 +1,68 @@
-const { Element, Point, Quadtree, Boundary } = require('./quadtree');
+const { insert, search, closest } = require('./quadtree');
 const assert = require('assert');
 
 {
-  console.log('Quadtree - returns the searched nodes');
-  const tree = new Quadtree(new Boundary(new Point(0, 0), new Point(8, 8)));
+  console.log('Quadtree - seearches for points within a boundary');
+  const quadtree = {
+    boundary: {
+      topLeft: { x: 0, y: 0 },
+      bottomRight: { x: 8, y: 8 },
+    },
+    points: [],
+  };
 
-  const n1 = new Element(new Point(1, 1), '1');
-  const n2 = new Element(new Point(2, 2), '2');
-  const n3 = new Element(new Point(4, 4), '3');
-  const n4 = new Element(new Point(6, 6), '4');
-  const n5 = new Element(new Point(3, 7), '5');
+  const p1 = { x: 1, y: 1 };
+  const p2 = { x: 2, y: 2 };
+  const p3 = { x: 4, y: 4 };
+  const p4 = { x: 6, y: 6 };
+  const p5 = { x: 3, y: 7 };
 
-  tree.insert(n1);
-  tree.insert(n2);
-  tree.insert(n3);
-  tree.insert(n4);
-  tree.insert(n5);
+  insert(quadtree, p1);
+  insert(quadtree, p2);
+  insert(quadtree, p3);
+  insert(quadtree, p4);
+  insert(quadtree, p5);
 
-  assert.deepStrictEqual(tree.search(new Boundary(new Point(3, 3), new Point(5, 5))), [n3]);
-  assert.deepStrictEqual(tree.search(new Boundary(new Point(3, 3), new Point(7, 7))), [n3, n5, n4]);
+  assert.deepStrictEqual(
+    search(quadtree, {
+      topLeft: { x: 3, y: 3 },
+      bottomRight: { x: 5, y: 5 },
+    }),
+    [p3]
+  );
+  assert.deepStrictEqual(
+    search(quadtree, {
+      topLeft: { x: 3, y: 3 },
+      bottomRight: { x: 7, y: 7 },
+    }),
+    [p3, p5, p4]
+  );
 }
 
 {
-  console.log('Quadtree - returns the closest node');
-  const tree = new Quadtree(new Boundary(new Point(0, 0), new Point(8, 8)));
+  console.log('Quadtree - returns the closest point');
+  const quadtree = {
+    boundary: {
+      topLeft: { x: 0, y: 0 },
+      bottomRight: { x: 8, y: 8 },
+    },
+    points: [],
+  };
 
-  const n1 = new Element(new Point(1, 1), '1');
-  const n2 = new Element(new Point(2, 2), '2');
-  const n3 = new Element(new Point(6, 6), '3');
-  const n4 = new Element(new Point(2, 7), '4');
-  const n5 = new Element(new Point(2, 3), '5');
+  const p1 = { x: 1, y: 1 };
+  const p2 = { x: 2, y: 2 };
+  const p3 = { x: 6, y: 6 };
+  const p4 = { x: 2, y: 7 };
+  const p5 = { x: 2, y: 3 };
 
-  tree.insert(n1);
-  tree.insert(n2);
-  tree.insert(n3);
-  tree.insert(n4);
-  tree.insert(n5);
+  insert(quadtree, p1);
+  insert(quadtree, p2);
+  insert(quadtree, p3);
+  insert(quadtree, p4);
 
-  assert.deepStrictEqual(tree.closest(new Point(2, 3)), { element: n5, distance: 0 });
+  assert.deepStrictEqual(closest(quadtree, { x: 2, y: 3 }), { point: p2, distance: 1 });
+
+  insert(quadtree, p5);
+
+  assert.deepStrictEqual(closest(quadtree, { x: 2, y: 3 }), { point: p5, distance: 0 });
 }

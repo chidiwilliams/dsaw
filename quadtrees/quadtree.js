@@ -13,8 +13,8 @@ const NODE_CAPACITY = 4;
 
 /**
  * A Quadtree is a tree where each node has exactly four children.
- * Each node can contain points up until `Quadtree.NODE_CAPACITY`,
- * after which the node will be further subdivided into four children.
+ * Each node can contain points up until `NODE_CAPACITY`, after
+ * which the node will be subdivided into four child nodes.
  *
  * @typedef {{
  *  boundary: Boundary,
@@ -32,9 +32,10 @@ const NODE_CAPACITY = 4;
  *
  * @param {Quadtree} node
  * @param {Point} point
- * @returns
+ * @returns true if the point was inserted into the node or one of its child nodes
  */
 function insert(node, point) {
+  // If the point is outside the node's boundary, return false
   if (!contains(node.boundary, point)) {
     return false;
   }
@@ -63,7 +64,7 @@ function insert(node, point) {
   if (insert(node.topRightChild, point)) return true;
   if (insert(node.bottomRightChild, point)) return true;
 
-  // We shouldn't ever get to this point
+  // We shouldn't ever get to this point, though
   return false;
 }
 
@@ -98,34 +99,19 @@ function subdivide(node) {
     y: (topLeft.y + bottomRight.y) / 2,
   };
 
-  node.topLeftChild = {
-    boundary: {
-      topLeft: { x: topLeft.x, y: topLeft.y },
-      bottomRight: { x: midPoint.x, y: midPoint.y },
-    },
-    points: [],
-  };
-  node.bottomLeftChild = {
-    boundary: {
-      topLeft: { x: topLeft.x, y: midPoint.y },
-      bottomRight: { x: midPoint.x, y: bottomRight.y },
-    },
-    points: [],
-  };
-  node.topRightChild = {
-    boundary: {
-      topLeft: { x: midPoint.x, y: topLeft.y },
-      bottomRight: { x: bottomRight.x, y: midPoint.y },
-    },
-    points: [],
-  };
-  node.bottomRightChild = {
-    boundary: {
-      topLeft: { x: midPoint.x, y: midPoint.y },
-      bottomRight: { x: bottomRight.x, y: bottomRight.y },
-    },
-    points: [],
-  };
+  node.topLeftChild = createNode({ x: topLeft.x, y: topLeft.y }, { x: midPoint.x, y: midPoint.y });
+  node.bottomLeftChild = createNode(
+    { x: topLeft.x, y: midPoint.y },
+    { x: midPoint.x, y: bottomRight.y }
+  );
+  node.topRightChild = createNode(
+    { x: midPoint.x, y: topLeft.y },
+    { x: bottomRight.x, y: midPoint.y }
+  );
+  node.bottomRightChild = createNode(
+    { x: midPoint.x, y: midPoint.y },
+    { x: bottomRight.x, y: bottomRight.y }
+  );
 
   // Move the points in the node to the child node that should contain the point.
   // Again, we can try inserting each point into all the child nodes. The wrong ones
@@ -150,8 +136,9 @@ function subdivide(node) {
  * @returns
  */
 function search(node, boundary) {
-  // If this node does not intersect with the search boundary, the nodes
-  // (and all its child nodes) do not have any points to offer the query
+  // If this node does not intersect with the search boundary,
+  // we know that the node and all its child nodes do not
+  // contain any points that fall into the search boundary
   if (!intersects(node.boundary, boundary)) {
     return [];
   }
@@ -191,65 +178,73 @@ function intersects(b1, b2) {
 }
 
 /**
- * Returns the closest point to the given point
+ * Returns the nearest point to the given point
  *
  * @param {Quadtree} node
- * @param {Point} point
- * @param {{point: Point, distance: number} | undefined} closestPoint
+ * @param {Point} location
+ * @param {{point: Point, distance: number} | undefined} nearestPoint
  * @returns
  */
-function closest(
+function nearest(
   node,
-  point,
-  closestPoint = {
+  location,
+  nearestPoint = {
     point: null,
     distance: distance(node.boundary.topLeft, node.boundary.bottomRight),
   }
 ) {
-  // If the boundary is farther than the closest point, no need to check here or any of the subtrees
+  // If the boundary is farther than the nearest point, no need to check here or any of the child nodes
   if (
-    Math.abs(point.x - node.boundary.topLeft.x) > closestPoint.distance ||
-    Math.abs(point.x - node.boundary.bottomRight.x) > closestPoint.distance ||
-    Math.abs(point.y - node.boundary.topLeft.y) > closestPoint.distance ||
-    Math.abs(point.y - node.boundary.bottomRight.y) > closestPoint.distance
+    Math.abs(location.x - node.boundary.topLeft.x) > nearestPoint.distance ||
+    Math.abs(location.x - node.boundary.bottomRight.x) > nearestPoint.distance ||
+    Math.abs(location.y - node.boundary.topLeft.y) > nearestPoint.distance ||
+    Math.abs(location.y - node.boundary.bottomRight.y) > nearestPoint.distance
   ) {
-    return closestPoint;
+    return nearestPoint;
   }
 
-  // Not yet subdivided, return the closest point in this node
+  // Not yet subdivided, return the nearest point in this node
   if (!node.topLeftChild) {
     node.points.forEach((nodePoint) => {
-      const d = distance(nodePoint, point);
-      if (d < closestPoint.distance) {
-        closestPoint.point = nodePoint;
-        closestPoint.distance = d;
+      const d = distance(nodePoint, location);
+      if (d < nearestPoint.distance) {
+        nearestPoint.point = nodePoint;
+        nearestPoint.distance = d;
       }
     });
-    return closestPoint;
+    return nearestPoint;
   }
 
-  // Since this node has already been subdivided, check all its child nodes
-  // But first, sort the child nodes according to their distance from the
-  // search point and check the closest ones first. The closer ones will be
-  // more likely to have points closer to the search point, which would
-  // help us skip larger nodes later on.
+  // Since this node has already been subdivided, check all its child nodes.
+  // Check the child node where the location falls first, before checking
+  // the adjacent nodes, and then the opposite node.
+
   const childNodes = [
     node.topLeftChild,
-    node.bottomLeftChild,
     node.topRightChild,
+    node.bottomLeftChild,
     node.bottomRightChild,
   ];
-  childNodes.sort(
-    (a, b) => distance(point, midpoint(a.boundary)) - distance(point, midpoint(b.boundary))
-  );
-  childNodes.forEach((childNode) => {
-    closestPoint = closest(childNode, point, closestPoint);
-  });
-  return closestPoint;
+
+  // True if location is at the top half of this node's boundary
+  const tb = location.y < (node.boundary.topLeft.y + node.boundary.bottomRight.y) / 2;
+  // True if location is at the left half of this node's boundary
+  const lr = location.x < (node.boundary.topLeft.x + node.boundary.bottomRight.x) / 2;
+
+  // containing node
+  nearestPoint = nearest(childNodes[2 * (1 - tb) + 1 * (1 - lr)], location, nearestPoint);
+  // adjacent node
+  nearestPoint = nearest(childNodes[2 * (1 - tb) + 1 * lr], location, nearestPoint);
+  // adjacent node
+  nearestPoint = nearest(childNodes[2 * tb + 1 * (1 - lr)], location, nearestPoint);
+  // opposite node
+  nearestPoint = nearest(childNodes[2 * tb + 1 * lr], location, nearestPoint);
+
+  return nearestPoint;
 }
 
 /**
- * Returns the distance between two points
+ * Returns the Euclidean distance between two points
  *
  * @param {Point} p1
  * @param {Point} p2
@@ -272,4 +267,8 @@ function midpoint(boundary) {
   };
 }
 
-module.exports = { insert, search, closest };
+function createNode(topLeft, bottomRight) {
+  return { boundary: { topLeft, bottomRight }, points: [] };
+}
+
+module.exports = { insert, search, nearest };

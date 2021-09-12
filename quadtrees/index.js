@@ -34,6 +34,7 @@ const images = (function () {
 
 const graphics = (function () {
   let image;
+  let tree;
 
   function drawTree(tree, width, height) {
     const canvas = document.querySelector('canvas');
@@ -65,31 +66,87 @@ const graphics = (function () {
     });
   }
 
-  async function init() {
-    image = await images.parse(
-      'https://pbs.twimg.com/profile_images/666068102673596421/kvffdCnC_400x400.jpg'
-    );
-    draw(50);
+  function getLeafCount() {
+    let count = 0;
+    visit(tree);
+
+    function visit(node) {
+      if (!node.children) {
+        count++;
+        return;
+      }
+
+      node.children.forEach((child) => {
+        visit(child);
+      });
+    }
+
+    return count;
+  }
+
+  async function init(imageUrl, maxDetail) {
+    image = await images.parse(imageUrl);
+    draw(maxDetail);
   }
 
   function draw(maxDetail) {
     const { pixels, w, h } = image;
-    const node = {
+    tree = {
       boundary: {
         topLeft: { x: 0, y: 0 },
         bottomRight: { x: w - 1, y: h - 1 },
       },
     };
-    compress(pixels, w, h, node, maxDetail);
-    drawTree(node, w, h);
+    compress(pixels, w, h, tree, maxDetail);
+    drawTree(tree, w, h);
   }
 
-  return { init, draw };
+  return { init, draw, getLeafCount };
 })();
 
-graphics.init();
+const canvasElement = document.querySelector('canvas');
+const detailInputElement = document.querySelector('input#detail');
+const detailValueElement = document.querySelector('span.detail-value');
+const nodeCountValueElement = document.querySelector('span.node-count-value');
+const imageSizeValueElement = document.querySelector('span.image-size-value');
 
-document.querySelector('input#detail').addEventListener('change', (evt) => {
-  const selected = evt.target.value;
-  graphics.draw(selected);
+function refreshView(value) {
+  detailValueElement.textContent = `${value}`;
+  nodeCountValueElement.textContent = `${graphics.getLeafCount()}`;
+  canvasElement.toBlob((blob) => {
+    imageSizeValueElement.textContent = `${Number(blob.size / 1000).toFixed(2)} Kbytes`;
+  });
+}
+
+const defaultDetail = 50;
+let currentDetail = defaultDetail;
+
+graphics.init('https://picsum.photos/256', defaultDetail).then(() => {
+  detailInputElement.value = defaultDetail;
+  refreshView(defaultDetail);
+
+  detailInputElement.addEventListener('change', (evt) => {
+    currentDetail = evt.target.value;
+    graphics.draw(currentDetail);
+    refreshView(currentDetail);
+  });
+});
+
+function randomizeView() {
+  // Adding x=random() prevents browser caching
+  graphics.init(`https://picsum.photos/256?x=${Math.random()}`, currentDetail).then(() => {
+    detailInputElement.value = currentDetail;
+    refreshView(currentDetail);
+  });
+}
+
+canvasElement.addEventListener('click', () => {
+  randomizeView();
+});
+
+canvasElement.addEventListener('keydown', (event) => {
+  if (event.key === 'Enter' || event.key === 'Space') {
+    event.preventDefault();
+    randomizeView();
+  }
 });

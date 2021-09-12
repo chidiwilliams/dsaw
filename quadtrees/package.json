@@ -2,10 +2,11 @@
   "name": "quadtrees",
   "version": "1.0.0",
   "description": "",
-  "main": "quadtree-image.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "parcel index.html"
+    "dev": "parcel *.html",
+    "build": "parcel build *.html --public-url .",
+    "deploy": "npm run build && gh-pages -d dist"
   },
   "author": "Chidi Williams",
   "license": "ISC",
@@ -13,6 +14,7 @@
     "get-pixels": "^3.3.3"
   },
   "devDependencies": {
-    "parcel": "^2.0.0-rc.0"
+    "parcel": "^2.0.0-rc.0",
+    "gh-pages": "^2.2.0"
   }
 }

@@ -13,14 +13,13 @@
  */
 
 /**
- * A region Quadtree holding the color and detail value
- * representing a region of an image
+ * A region Quadtree with a color and detail value
  *
  * @typedef {{
  *  boundary: Boundary,
- *  children: ImageQuadtree[],
- *  color: Color,
- *  detail: number
+ *  children?: ImageQuadtree[],
+ *  color?: Color,
+ *  detail?: number
  * }} ImageQuadtree
  */
 
@@ -54,6 +53,7 @@ function compress(pixels, w, h, node, maxDetail) {
     x: Math.floor((topLeft.x + bottomRight.x) / 2),
     y: Math.floor((topLeft.y + bottomRight.y) / 2),
   };
+
   node.children = [
     createNode({ x: topLeft.x, y: topLeft.y }, { x: midPoint.x, y: midPoint.y }), // Top-left
     createNode({ x: topLeft.x, y: midPoint.y + 1 }, { x: midPoint.x, y: bottomRight.y }), // Bottom-left
@@ -61,7 +61,7 @@ function compress(pixels, w, h, node, maxDetail) {
     createNode({ x: midPoint.x + 1, y: midPoint.y + 1 }, { x: bottomRight.x, y: bottomRight.y }), // Bottom-right
   ];
 
-  // ...then compress each of the nodes
+  // ...then compress each of the child nodes
   node.children.forEach((child) => {
     const startx = child.boundary.topLeft.x - topLeft.x;
     const endx = child.boundary.bottomRight.x - topLeft.x;

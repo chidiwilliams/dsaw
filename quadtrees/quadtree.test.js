@@ -1,4 +1,4 @@
-const { insert, search, closest } = require('./quadtree');
+const { insert, search, nearest } = require('./quadtree');
 const assert = require('assert');
 
 {
@@ -40,7 +40,7 @@ const assert = require('assert');
 }
 
 {
-  console.log('Quadtree - returns the closest point');
+  console.log('Quadtree - returns the nearest point');
   const quadtree = {
     boundary: {
       topLeft: { x: 0, y: 0 },
@@ -60,9 +60,9 @@ const assert = require('assert');
   insert(quadtree, p3);
   insert(quadtree, p4);
 
-  assert.deepStrictEqual(closest(quadtree, { x: 2, y: 3 }), { point: p2, distance: 1 });
+  assert.deepStrictEqual(nearest(quadtree, { x: 2, y: 3 }), { point: p2, distance: 1 });
 
   insert(quadtree, p5);
 
-  assert.deepStrictEqual(closest(quadtree, { x: 2, y: 3 }), { point: p5, distance: 0 });
+  assert.deepStrictEqual(nearest(quadtree, { x: 2, y: 3 }), { point: p5, distance: 0 });
 }

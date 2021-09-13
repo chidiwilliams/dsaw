@@ -2,7 +2,7 @@ const { insert, search, nearest } = require('./quadtree');
 const assert = require('assert');
 
 {
-  console.log('Quadtree - seearches for points within a boundary');
+  console.log('Quadtree - searches for points within a boundary');
   const quadtree = {
     boundary: {
       topLeft: { x: 0, y: 0 },

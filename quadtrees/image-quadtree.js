@@ -13,40 +13,40 @@
  */
 
 /**
- * A region Quadtree with a color and detail value
+ * A region Quadtree with a color and error value
  *
  * @typedef {{
  *  boundary: Boundary,
  *  children?: ImageQuadtree[],
  *  color?: Color,
- *  detail?: number
+ *  error?: number
  * }} ImageQuadtree
  */
 
 /**
- * Returns a quadtree representing the pixel values compressed within maxDetail
+ * Returns a quadtree representing the pixel values compressed within maxError
  *
  * @param {Color[][]} pixels
  * @param {number} w
  * @param {number} h
  * @param {ImageQuadtree} node
- * @param {number} maxDetail
+ * @param {number} maxError
  * @returns
  */
-function compress(pixels, w, h, node, maxDetail) {
+function compress(pixels, w, h, node, maxError) {
   const avg = average(pixels, w, h);
-  const det = detail(pixels, w, h, avg);
+  const err = error(pixels, w, h, avg);
 
-  // If the amount of detail in this node is less than the maximum
-  //  detail, store the color and detail values in the node
-  if (det < maxDetail) {
+  // If the amount of error in this node is less than the maximum
+  //  error, store the color and error values in the node
+  if (err < maxError) {
     node.color = avg;
-    node.detail = det;
+    node.error = err;
     return;
   }
 
   // If the node has more than the maximum allowed amount
-  // of detail, split the node into child nodes
+  // of error, split the node into child nodes
 
   const { topLeft, bottomRight } = node.boundary;
   const midPoint = {
@@ -72,7 +72,7 @@ function compress(pixels, w, h, node, maxDetail) {
     const childW = midPoint.x - topLeft.x;
     const childH = midPoint.y - topLeft.y;
 
-    compress(childPixels, childW, childH, child, maxDetail);
+    compress(childPixels, childW, childH, child, maxError);
   });
 }
 
@@ -107,8 +107,8 @@ function average(pixels, w, h) {
 }
 
 /**
- * Returns the amount of detail in pixels.
- * The detail is the average difference between each pixel's color
+ * Returns the amount of error in pixels.
+ * The error is the average difference between each pixel's color
  * and the average color in pixels.
  *
  * @param {Color[][]} pixels
@@ -117,7 +117,7 @@ function average(pixels, w, h) {
  * @param {Color} avg
  * @returns
  */
-function detail(pixels, w, h, avg) {
+function error(pixels, w, h, avg) {
   let dr = 0;
   let dg = 0;
   let db = 0;
@@ -157,7 +157,7 @@ function slice2d(arr, startx, endx, starty, endy) {
  * @returns {ImageQuadtree}
  */
 function createNode(topLeft, bottomRight) {
-  return { boundary: { topLeft, bottomRight }, children: null, color: null, detail: null };
+  return { boundary: { topLeft, bottomRight }, children: null, color: null, error: null };
 }
 
 module.exports = { compress };

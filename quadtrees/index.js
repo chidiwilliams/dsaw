@@ -84,12 +84,12 @@ const graphics = (function () {
     return count;
   }
 
-  async function init(imageUrl, maxDetail) {
+  async function init(imageUrl, maxError) {
     image = await images.parse(imageUrl);
-    draw(maxDetail);
+    draw(maxError);
   }
 
-  function draw(maxDetail) {
+  function draw(maxError) {
     const { pixels, w, h } = image;
     tree = {
       boundary: {
@@ -97,7 +97,7 @@ const graphics = (function () {
         bottomRight: { x: w - 1, y: h - 1 },
       },
     };
-    compress(pixels, w, h, tree, maxDetail);
+    compress(pixels, w, h, tree, maxError);
     drawTree(tree, w, h);
   }
 
@@ -105,38 +105,38 @@ const graphics = (function () {
 })();
 
 const canvasElement = document.querySelector('canvas');
-const detailInputElement = document.querySelector('input#detail');
-const detailValueElement = document.querySelector('span.detail-value');
+const errorInputElement = document.querySelector('input#error');
+const errorValueElement = document.querySelector('span.error-value');
 const nodeCountValueElement = document.querySelector('span.node-count-value');
 const imageSizeValueElement = document.querySelector('span.image-size-value');
 
 function refreshView(value) {
-  detailValueElement.textContent = `${value}`;
+  errorValueElement.textContent = `${value}`;
   nodeCountValueElement.textContent = `${graphics.getLeafCount()}`;
   canvasElement.toBlob((blob) => {
     imageSizeValueElement.textContent = `${Number(blob.size / 1000).toFixed(2)} Kbytes`;
   });
 }
 
-const defaultDetail = 50;
-let currentDetail = defaultDetail;
+const defaultError = 50;
+let currentError = defaultError;
 
-graphics.init('https://picsum.photos/256', defaultDetail).then(() => {
-  detailInputElement.value = defaultDetail;
-  refreshView(defaultDetail);
+graphics.init('https://picsum.photos/256', defaultError).then(() => {
+  errorInputElement.value = defaultError;
+  refreshView(defaultError);
 
-  detailInputElement.addEventListener('change', (evt) => {
-    currentDetail = evt.target.value;
-    graphics.draw(currentDetail);
-    refreshView(currentDetail);
+  errorInputElement.addEventListener('change', (evt) => {
+    currentError = evt.target.value;
+    graphics.draw(currentError);
+    refreshView(currentError);
   });
 });
 
 function randomizeView() {
   // Adding x=random() prevents browser caching
-  graphics.init(`https://picsum.photos/256?x=${Math.random()}`, currentDetail).then(() => {
-    detailInputElement.value = currentDetail;
-    refreshView(currentDetail);
+  graphics.init(`https://picsum.photos/256?x=${Math.random()}`, currentError).then(() => {
+    errorInputElement.value = currentError;
+    refreshView(currentError);
   });
 }
 

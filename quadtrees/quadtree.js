@@ -1,5 +1,5 @@
 // Maximum number of points that can be held in a node
-const NODE_CAPACITY = 4;
+const NODE_CAPACITY = 400;
 
 /**
  * A Point holds (x,y) coordinates.
@@ -254,21 +254,8 @@ function distance(p1, p2) {
   return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
 }
 
-/**
- * Returns the midpoint of the boundary
- *
- * @param {Boundary} boundary
- * @returns
- */
-function midpoint(boundary) {
-  return {
-    x: (boundary.topLeft.x + boundary.bottomRight.x) / 2,
-    y: (boundary.topLeft.y + boundary.bottomRight.y) / 2,
-  };
-}
-
 function createNode(topLeft, bottomRight) {
   return { boundary: { topLeft, bottomRight }, points: [] };
 }
 
-module.exports = { insert, search, nearest };
+module.exports = { insert, search, nearest, contains };

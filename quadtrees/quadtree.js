@@ -205,10 +205,10 @@ function nearest(
 
   // Not yet subdivided, return the nearest point in this node
   if (!node.topLeftChild) {
-    node.points.forEach((nodePoint) => {
-      const d = distance(nodePoint, location);
+    node.points.forEach((point) => {
+      const d = distance(point, location);
       if (d < nearestPoint.distance) {
-        nearestPoint.point = nodePoint;
+        nearestPoint.point = point;
         nearestPoint.distance = d;
       }
     });
@@ -258,4 +258,4 @@ function createNode(topLeft, bottomRight) {
   return { boundary: { topLeft, bottomRight }, points: [] };
 }
 
-module.exports = { insert, search, nearest, contains };
+module.exports = { insert, search, nearest, contains, distance };

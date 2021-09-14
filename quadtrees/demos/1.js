@@ -3,34 +3,33 @@ const d3 = require('d3');
 const width = 750;
 const height = 300;
 
-const data = d3.range(100).map(function () {
+const data = d3.range(300).map(function () {
   return [Math.random() * width, Math.random() * height];
 });
 
-const svg = d3.select('body').append('svg').attr('width', width).attr('height', height);
-
 const s = 100;
-const x1 = Math.random() * (width - s);
-const y1 = Math.random() * (height - s);
 
-const rect = svg
+let ptr;
+
+const svg = d3
+  .select('body')
+  .append('svg')
+  .attr('width', width)
+  .attr('height', height)
+  .on('click', function (e) {
+    const [x, y] = d3.pointer(e, d3.selectAll('svg').node());
+    ptr.attr('cx', x).attr('cy', y);
+    draw();
+  });
+
+let rect = svg
   .selectAll('.rect')
-  .data([{ x1: x1, x2: x1 + s, y1: y1, y2: y1 + s }])
+  .data([{}])
   .enter()
   .append('rect')
   .attr('class', 'rect')
-  .attr('x', function (d) {
-    return d.x1;
-  })
-  .attr('y', function (d) {
-    return d.y1;
-  })
-  .attr('width', function (d) {
-    return d.x2 - d.x1;
-  })
-  .attr('height', function (d) {
-    return d.y2 - d.y1;
-  });
+  .attr('width', s)
+  .attr('height', s);
 
 const points = svg
   .selectAll('.point')
@@ -46,27 +45,31 @@ const points = svg
   })
   .attr('r', 3);
 
-points.each((p) => {
-  const [x, y] = p;
-  if (x >= x1 && x <= x1 + s && y >= y1 && y <= y1 + s) {
-    p.selected = true;
-  }
-});
+ptr = svg
+  .append('circle')
+  .attr('id', 'pt')
+  .attr('r', 3)
+  .attr('cx', width / 2)
+  .attr('cy', height / 2)
+  .style('fill', 'yellow');
 
-points.classed('selected', (p) => {
-  return p.selected;
-});
+function draw() {
+  const ptrx = +ptr.attr('cx');
+  const ptry = +ptr.attr('cy');
 
-// const user = svg
-//   .selectAll('.user')
-//   .data([[x1 + s / 2, y1 + s / 2]])
-//   .enter()
-//   .append('circle')
-//   .attr('class', 'center')
-//   .attr('cx', function (d) {
-//     return d[0];
-//   })
-//   .attr('cy', function (d) {
-//     return d[1];
-//   })
-//   .attr('r', 5);
+  rect.attr('x', ptrx - s / 2).attr('y', ptry - s / 2);
+
+  const rx = +rect.attr('x');
+  const ry = +rect.attr('y');
+  const rw = +rect.attr('width');
+  const rh = +rect.attr('height');
+
+  points.each((p) => {
+    const [x, y] = p;
+    p.selected = x >= rx && x <= rx + rw && y >= ry && y <= ry + rh;
+  });
+
+  points.classed('selected', (p) => p.selected);
+}
+
+draw();

@@ -4,9 +4,9 @@ const { insert } = require('../quadtree');
 const width = 750;
 const height = 300;
 
-const svg = d3.select('body').append('svg').attr('width', width).attr('height', height);
+const svg = d3.select('#target').append('svg').attr('width', width).attr('height', height);
 
-const quadtree = {
+let quadtree = {
   boundary: {
     topLeft: { x: 0, y: 0 },
     bottomRight: { x: width, y: height },
@@ -125,13 +125,35 @@ pts = svg
   })
   .attr('r', 3);
 
-for (let i = 0; i < 300; i++) {
-  insert(quadtree, { x: Math.random() * width, y: Math.random() * height });
+let interval;
+
+function run() {
+  quadtree = {
+    boundary: {
+      topLeft: { x: 0, y: 0 },
+      bottomRight: { x: width, y: height },
+    },
+    points: [],
+    depth: 1,
+  };
+
+  let i = 0;
+  interval = setInterval(() => {
+    insert(quadtree, { x: Math.random() * width, y: Math.random() * height });
+    draw();
+
+    if (i++ === 150) {
+      clearInterval(interval);
+    }
+  }, 40);
 }
 
-draw();
+run();
 
-// setInterval(() => {
-//   insert(quadtree, { x: Math.random() * width, y: Math.random() * height });
-//   draw();
-// }, 100);
+document.querySelector('button').addEventListener('click', () => {
+  if (interval) {
+    clearInterval(interval);
+  }
+
+  run();
+});

@@ -192,12 +192,12 @@ function nearest(
     distance: distance(node.boundary.topLeft, node.boundary.bottomRight),
   }
 ) {
-  // If the boundary is farther than the nearest point, no need to check here or any of the child nodes
+  // If this node is farther away than the nearest point, no need to check here or any of its child nodes
   if (
-    Math.abs(location.x - node.boundary.topLeft.x) > nearestPoint.distance ||
-    Math.abs(location.x - node.boundary.bottomRight.x) > nearestPoint.distance ||
-    Math.abs(location.y - node.boundary.topLeft.y) > nearestPoint.distance ||
-    Math.abs(location.y - node.boundary.bottomRight.y) > nearestPoint.distance
+    location.x < node.boundary.topLeft.x - nearestPoint.distance || // location too left
+    location.x > node.boundary.bottomRight.x + nearestPoint.distance || // location too right
+    location.y < node.boundary.topLeft.y - nearestPoint.distance || // location too top
+    location.y > node.boundary.bottomRight.y + nearestPoint.distance // location too bottom
   ) {
     return nearestPoint;
   }

@@ -126,8 +126,19 @@ pts = svg
   .attr('r', 3);
 
 let interval;
+const n = 150;
 
-function run() {
+for (let i = 0; i < n; i++) {
+  insert(quadtree, { x: Math.random() * width, y: Math.random() * height });
+}
+
+draw();
+
+document.querySelector('button').addEventListener('click', () => {
+  if (interval) {
+    clearInterval(interval);
+  }
+
   quadtree = {
     boundary: {
       topLeft: { x: 0, y: 0 },
@@ -145,15 +156,5 @@ function run() {
     if (i++ === 150) {
       clearInterval(interval);
     }
-  }, 40);
-}
-
-run();
-
-document.querySelector('button').addEventListener('click', () => {
-  if (interval) {
-    clearInterval(interval);
-  }
-
-  run();
+  }, 50);
 });

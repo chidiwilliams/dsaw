@@ -60,10 +60,11 @@ function runSearchQT(n) {
     },
     points: [],
   };
+  const nodeCapacity = 400;
 
   console.time(`insert-tree-${n}`);
   for (let i = 0; i < n; i++) {
-    insert(quadtree, { x: Math.random() * w, y: Math.random() * h });
+    insert(quadtree, { x: Math.random() * w, y: Math.random() * h }, nodeCapacity);
   }
   console.timeEnd(`insert-tree-${n}`);
 
@@ -108,10 +109,11 @@ function runNearestQT(n) {
     },
     points: [],
   };
+  const nodeCapacity = 400;
 
   console.time(`insert-tree-${n}`);
   for (let i = 0; i < n; i++) {
-    insert(quadtree, { x: Math.random() * w, y: Math.random() * h });
+    insert(quadtree, { x: Math.random() * w, y: Math.random() * h }, nodeCapacity);
   }
   console.timeEnd(`insert-tree-${n}`);
 
@@ -126,8 +128,8 @@ function runNearestQT(n) {
 }
 
 for (let n = 1000; n < 20000; n += 1000) {
-  // runSearchList(i);
-  // runSearchQT(i);
-  // runNearestList(i);
-  // runNearestQT(i);
+  runSearchList(n);
+  runSearchQT(n);
+  runNearestList(n);
+  runNearestQT(n);
 }

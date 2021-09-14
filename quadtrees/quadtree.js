@@ -1,6 +1,3 @@
-// Maximum number of points that can be held in a node
-const NODE_CAPACITY = 400;
-
 /**
  * A Point holds (x,y) coordinates.
  * @typedef {{x:number, y: number}} Point
@@ -32,9 +29,10 @@ const NODE_CAPACITY = 400;
  *
  * @param {Quadtree} node
  * @param {Point} point
+ * @param {number} nodeCapacity
  * @returns true if the point was inserted into the node or one of its child nodes
  */
-function insert(node, point) {
+function insert(node, point, nodeCapacity) {
   // If the point is outside the node's boundary, return false
   if (!contains(node.boundary, point)) {
     return false;
@@ -42,7 +40,7 @@ function insert(node, point) {
 
   // If this node has not yet reached its capacity and has not
   // yet been subdivided, insert the point into this node
-  if (node.points.length < NODE_CAPACITY && !node.topLeftChild) {
+  if (node.points.length < nodeCapacity && !node.topLeftChild) {
     node.points.push(point);
     return true;
   }
@@ -53,16 +51,16 @@ function insert(node, point) {
   // If the node has reached its capacity,
   // but hasn't been subdivided, subdivide
   if (!node.topLeftChild) {
-    subdivide(node);
+    subdivide(node, nodeCapacity);
   }
 
   // Insert the point into its correct child node. We can try inserting into all the child nodes
   // The wrong ones (where the point's position is outside the child node's boundary) would
   // simply return false, until we find the correct child node.
-  if (insert(node.topLeftChild, point)) return true;
-  if (insert(node.bottomLeftChild, point)) return true;
-  if (insert(node.topRightChild, point)) return true;
-  if (insert(node.bottomRightChild, point)) return true;
+  if (insert(node.topLeftChild, point, nodeCapacity)) return true;
+  if (insert(node.bottomLeftChild, point, nodeCapacity)) return true;
+  if (insert(node.topRightChild, point, nodeCapacity)) return true;
+  if (insert(node.bottomRightChild, point, nodeCapacity)) return true;
 
   // We shouldn't ever get to this point, though
   return false;
@@ -90,8 +88,9 @@ function contains(boundary, point) {
  * points in the node into their correct child nodes.
  *
  * @param {Quadtree} node
+ * @param {number} nodeCapacity
  */
-function subdivide(node) {
+function subdivide(node, nodeCapacity) {
   // Create the four child nodes
   const { topLeft, bottomRight } = node.boundary;
   const midPoint = {
@@ -118,10 +117,10 @@ function subdivide(node) {
   // (where the point's position is outside the child node's boundary) would simply
   // return false, until we find the correct child node.
   node.points.forEach((point) => {
-    if (insert(node.topLeftChild, point)) return;
-    if (insert(node.bottomLeftChild, point)) return;
-    if (insert(node.topRightChild, point)) return;
-    if (insert(node.bottomRightChild, point)) return;
+    if (insert(node.topLeftChild, point, nodeCapacity)) return;
+    if (insert(node.bottomLeftChild, point, nodeCapacity)) return;
+    if (insert(node.topRightChild, point, nodeCapacity)) return;
+    if (insert(node.bottomRightChild, point, nodeCapacity)) return;
   });
 
   // We no longer need to keep the points in node

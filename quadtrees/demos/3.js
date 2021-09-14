@@ -1,5 +1,5 @@
 const d3 = require('d3');
-const { insert } = require('./quadtree');
+const { insert } = require('../quadtree');
 
 const width = 750;
 const height = 300;

@@ -32,7 +32,7 @@
  * @param {number} nodeCapacity
  * @returns true if the point was inserted into the node or one of its child nodes
  */
-function insert(node, point, nodeCapacity) {
+function insert(node, point, nodeCapacity = 4) {
   // If the point is outside the node's boundary, return false
   if (!contains(node.boundary, point)) {
     return false;

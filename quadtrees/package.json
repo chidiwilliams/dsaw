@@ -4,8 +4,8 @@
   "description": "",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "parcel *.html",
-    "build": "parcel build *.html --public-url .",
+    "dev": "parcel demos/*.html",
+    "build": "parcel build demos/*.html --public-url .",
     "deploy": "npm run build && gh-pages -d dist"
   },
   "author": "Chidi Williams",

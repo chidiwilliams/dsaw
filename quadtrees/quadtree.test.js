@@ -1,8 +1,6 @@
 const { insert, search, nearest } = require('./quadtree');
 const assert = require('assert');
 
-const nodeCapacity = 4;
-
 {
   console.log('Quadtree - searches for points within a boundary');
   const quadtree = {
@@ -19,11 +17,11 @@ const nodeCapacity = 4;
   const p4 = { x: 6, y: 6 };
   const p5 = { x: 3, y: 7 };
 
-  insert(quadtree, p1, nodeCapacity);
-  insert(quadtree, p2, nodeCapacity);
-  insert(quadtree, p3, nodeCapacity);
-  insert(quadtree, p4, nodeCapacity);
-  insert(quadtree, p5, nodeCapacity);
+  insert(quadtree, p1);
+  insert(quadtree, p2);
+  insert(quadtree, p3);
+  insert(quadtree, p4);
+  insert(quadtree, p5);
 
   assert.deepStrictEqual(
     search(quadtree, {
@@ -57,14 +55,14 @@ const nodeCapacity = 4;
   const p4 = { x: 2, y: 7 };
   const p5 = { x: 2, y: 3 };
 
-  insert(quadtree, p1, nodeCapacity);
-  insert(quadtree, p2, nodeCapacity);
-  insert(quadtree, p3, nodeCapacity);
-  insert(quadtree, p4, nodeCapacity);
+  insert(quadtree, p1);
+  insert(quadtree, p2);
+  insert(quadtree, p3);
+  insert(quadtree, p4);
 
   assert.deepStrictEqual(nearest(quadtree, { x: 2, y: 3 }), { point: p2, distance: 1 });
 
-  insert(quadtree, p5, nodeCapacity);
+  insert(quadtree, p5);
 
   assert.deepStrictEqual(nearest(quadtree, { x: 2, y: 3 }), { point: p5, distance: 0 });
 }

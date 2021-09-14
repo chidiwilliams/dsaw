@@ -1,5 +1,5 @@
 const getPixels = require('get-pixels');
-const { compress } = require('./image-quadtree');
+const { compress } = require('../image-quadtree');
 
 const images = (function () {
   function parse(path) {

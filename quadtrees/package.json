@@ -5,7 +5,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "parcel demos/*.html",
-    "build": "parcel build demos/*.html --public-url .",
+    "build": "rm -rf .parcel-cache && rm -rf dist && parcel build demos/*.html --dist-dir dist/quadtrees --public-url .",
     "deploy": "npm run build && gh-pages -d dist"
   },
   "author": "Chidi Williams",

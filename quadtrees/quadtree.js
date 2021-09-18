@@ -157,7 +157,7 @@ function search(node, boundary) {
 }
 
 /**
- * Returns true if the given boundary intersects with this boundary
+ * Returns true if two boundaries interesect
  *
  * @param {Boundary} b1
  * @param {Boundary} b2
@@ -225,19 +225,17 @@ function nearest(
     node.bottomRightChild,
   ];
 
-  // True if location is at the top half of this node's boundary
-  const tb = location.y < (node.boundary.topLeft.y + node.boundary.bottomRight.y) / 2;
-  // True if location is at the left half of this node's boundary
-  const lr = location.x < (node.boundary.topLeft.x + node.boundary.bottomRight.x) / 2;
+  const isTop = location.y < (node.boundary.topLeft.y + node.boundary.bottomRight.y) / 2;
+  const isLeft = location.x < (node.boundary.topLeft.x + node.boundary.bottomRight.x) / 2;
 
   // containing node
-  nearestPoint = nearest(childNodes[2 * (1 - tb) + 1 * (1 - lr)], location, nearestPoint);
+  nearestPoint = nearest(childNodes[2 * (1 - isTop) + 1 * (1 - isLeft)], location, nearestPoint);
   // adjacent node
-  nearestPoint = nearest(childNodes[2 * (1 - tb) + 1 * lr], location, nearestPoint);
+  nearestPoint = nearest(childNodes[2 * (1 - isTop) + 1 * isLeft], location, nearestPoint);
   // adjacent node
-  nearestPoint = nearest(childNodes[2 * tb + 1 * (1 - lr)], location, nearestPoint);
+  nearestPoint = nearest(childNodes[2 * isTop + 1 * (1 - isLeft)], location, nearestPoint);
   // opposite node
-  nearestPoint = nearest(childNodes[2 * tb + 1 * lr], location, nearestPoint);
+  nearestPoint = nearest(childNodes[2 * isTop + 1 * isLeft], location, nearestPoint);
 
   return nearestPoint;
 }

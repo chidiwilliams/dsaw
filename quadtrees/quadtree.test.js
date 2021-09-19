@@ -5,8 +5,10 @@ const assert = require('assert');
   console.log('Quadtree - searches for points within a boundary');
   const quadtree = {
     boundary: {
-      topLeft: { x: 0, y: 0 },
-      bottomRight: { x: 8, y: 8 },
+      x1: 0,
+      x2: 8,
+      y1: 0,
+      y2: 8,
     },
     points: [],
   };
@@ -25,15 +27,19 @@ const assert = require('assert');
 
   assert.deepStrictEqual(
     search(quadtree, {
-      topLeft: { x: 3, y: 3 },
-      bottomRight: { x: 5, y: 5 },
+      x1: 3,
+      y1: 3,
+      x2: 5,
+      y2: 5,
     }),
     [p3]
   );
   assert.deepStrictEqual(
     search(quadtree, {
-      topLeft: { x: 3, y: 3 },
-      bottomRight: { x: 7, y: 7 },
+      x1: 3,
+      y1: 3,
+      x2: 7,
+      y2: 7,
     }),
     [p3, p5, p4]
   );
@@ -43,8 +49,10 @@ const assert = require('assert');
   console.log('Quadtree - returns the nearest point');
   const quadtree = {
     boundary: {
-      topLeft: { x: 0, y: 0 },
-      bottomRight: { x: 8, y: 8 },
+      x1: 0,
+      y1: 0,
+      x2: 8,
+      y2: 8,
     },
     points: [],
   };

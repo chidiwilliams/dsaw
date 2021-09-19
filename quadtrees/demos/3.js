@@ -8,8 +8,10 @@ const svg = d3.select('#target').append('svg').attr('width', width).attr('height
 
 let quadtree = {
   boundary: {
-    topLeft: { x: 0, y: 0 },
-    bottomRight: { x: width, y: height },
+    x1: 0,
+    y1: 0,
+    x2: width,
+    y2: height,
   },
   points: [],
   depth: 1,
@@ -53,26 +55,30 @@ let pts;
 let rect;
 
 function draw() {
-  rect = rect.data(nodes(quadtree));
+  rect = svg.selectAll('.node').data(nodes(quadtree), (node) => node.boundary);
   rect.exit().remove();
   rect
     .enter()
     .append('rect')
     .attr('class', 'node')
     .attr('x', function (d) {
-      return d.boundary.topLeft.x;
+      return d.boundary.x1;
     })
     .attr('y', function (d) {
-      return d.boundary.topLeft.y;
+      return d.boundary.y1;
     })
     .attr('width', function (d) {
-      return d.boundary.bottomRight.x - d.boundary.topLeft.x;
+      return d.boundary.x2 - d.boundary.x1;
     })
     .attr('height', function (d) {
-      return d.boundary.bottomRight.y - d.boundary.topLeft.y;
+      return d.boundary.y2 - d.boundary.y1;
     });
 
-  pts = pts.data(points(quadtree));
+  svg.selectAll('.node').style('fill', function (d) {
+    return color(d.depth);
+  });
+
+  pts = svg.selectAll('.point').data(points(quadtree), (p) => p.x);
   pts.exit().remove();
   pts
     .enter()
@@ -84,31 +90,32 @@ function draw() {
     .attr('cy', function (d) {
       return d.y;
     })
-    .attr('r', 3);
-
-  svg.selectAll('.node').style('fill', function (d) {
-    return color(d.depth);
-    // return d.visited ? color(d.depth) : 'none';
-  });
+    .attr('r', 3)
+    .transition()
+    .duration(2000)
+    .styleTween('fill', function () {
+      return d3.interpolate('red', '#999');
+    });
+  svg.selectAll('.point').raise();
 }
 
 rect = svg
   .selectAll('.node')
-  .data(nodes(quadtree))
+  .data(nodes(quadtree), (node) => node.boundary)
   .enter()
   .append('rect')
   .attr('class', 'node')
   .attr('x', function (d) {
-    return d.boundary.topLeft.x;
+    return d.boundary.x1;
   })
   .attr('y', function (d) {
-    return d.boundary.topLeft.y;
+    return d.boundary.y1;
   })
   .attr('width', function (d) {
-    return d.boundary.bottomRight.x - d.boundary.topLeft.x;
+    return d.boundary.x2 - d.boundary.x1;
   })
   .attr('height', function (d) {
-    return d.boundary.bottomRight.y - d.boundary.topLeft.y;
+    return d.boundary.y2 - d.boundary.y1;
   });
 
 pts = svg
@@ -125,36 +132,37 @@ pts = svg
   })
   .attr('r', 3);
 
-let interval;
-const n = 150;
-
-for (let i = 0; i < n; i++) {
-  insert(quadtree, { x: Math.random() * width, y: Math.random() * height });
-}
+quadtree = {
+  boundary: {
+    x1: 0,
+    y1: 0,
+    x2: width,
+    y2: height,
+  },
+  points: [],
+  depth: 1,
+};
 
 draw();
 
-document.querySelector('button').addEventListener('click', () => {
-  if (interval) {
-    clearInterval(interval);
-  }
+const restartButton = document.querySelector('button#restart');
+const addPointButton = document.querySelector('button#add');
 
+addPointButton.addEventListener('click', () => {
+  insert(quadtree, { x: Math.random() * width, y: Math.random() * height });
+  draw();
+});
+
+restartButton.addEventListener('click', () => {
   quadtree = {
     boundary: {
-      topLeft: { x: 0, y: 0 },
-      bottomRight: { x: width, y: height },
+      x1: 0,
+      y1: 0,
+      x2: width,
+      y2: height,
     },
     points: [],
     depth: 1,
   };
-
-  let i = 0;
-  interval = setInterval(() => {
-    insert(quadtree, { x: Math.random() * width, y: Math.random() * height });
-    draw();
-
-    if (i++ === 150) {
-      clearInterval(interval);
-    }
-  }, 50);
+  draw();
 });

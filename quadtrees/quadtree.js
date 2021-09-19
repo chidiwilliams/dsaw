@@ -5,7 +5,7 @@
 
 /**
  * A Boundary is an enclosed rectangular area.
- * @typedef {{topLeft: Point, bottomRight: Point}} Boundary
+ * @typedef {{x1:number, x2: number, y1: number, y2: number}} Boundary
  */
 
 /**
@@ -76,10 +76,10 @@ function insert(node, point, nodeCapacity = 4) {
  */
 function contains(boundary, point) {
   return (
-    point.x >= boundary.topLeft.x &&
-    point.x <= boundary.bottomRight.x &&
-    point.y >= boundary.topLeft.y &&
-    point.y <= boundary.bottomRight.y
+    point.x >= boundary.x1 &&
+    point.x <= boundary.x2 &&
+    point.y >= boundary.y1 &&
+    point.y <= boundary.y2
   );
 }
 
@@ -92,25 +92,16 @@ function contains(boundary, point) {
  */
 function subdivide(node, nodeCapacity) {
   // Create the four child nodes
-  const { topLeft, bottomRight } = node.boundary;
+  const { x1, x2, y1, y2 } = node.boundary;
   const midPoint = {
-    x: (topLeft.x + bottomRight.x) / 2,
-    y: (topLeft.y + bottomRight.y) / 2,
+    x: (x1 + x2) / 2,
+    y: (y1 + y2) / 2,
   };
 
-  node.topLeftChild = createNode({ x: topLeft.x, y: topLeft.y }, { x: midPoint.x, y: midPoint.y });
-  node.bottomLeftChild = createNode(
-    { x: topLeft.x, y: midPoint.y },
-    { x: midPoint.x, y: bottomRight.y }
-  );
-  node.topRightChild = createNode(
-    { x: midPoint.x, y: topLeft.y },
-    { x: bottomRight.x, y: midPoint.y }
-  );
-  node.bottomRightChild = createNode(
-    { x: midPoint.x, y: midPoint.y },
-    { x: bottomRight.x, y: bottomRight.y }
-  );
+  node.topLeftChild = createNode({ x1, y1, x2: midPoint.x, y2: midPoint.y });
+  node.bottomLeftChild = createNode({ x1, y1: midPoint.y, x2: midPoint.x, y2 });
+  node.topRightChild = createNode({ x1: midPoint.x, y1, x2, y2: midPoint.y });
+  node.bottomRightChild = createNode({ x1: midPoint.x, y1: midPoint.y, x2, y2 });
 
   // Move the points in the node to the child node that should contain the point.
   // Again, we can try inserting each point into all the child nodes. The wrong ones
@@ -166,13 +157,13 @@ function search(node, boundary) {
 function intersects(b1, b2) {
   return (
     // not too right
-    b1.topLeft.x <= b2.bottomRight.x &&
+    b1.x1 <= b2.x2 &&
     // not too left
-    b1.bottomRight.x >= b2.topLeft.x &&
+    b1.x2 >= b2.x1 &&
     // not too down
-    b1.topLeft.y <= b2.bottomRight.y &&
+    b1.y1 <= b2.y2 &&
     // not too up
-    b1.bottomRight.y >= b2.topLeft.y
+    b1.y2 >= b2.y1
   );
 }
 
@@ -184,20 +175,13 @@ function intersects(b1, b2) {
  * @param {{point: Point, distance: number} | undefined} nearestPoint
  * @returns
  */
-function nearest(
-  node,
-  location,
-  nearestPoint = {
-    point: null,
-    distance: distance(node.boundary.topLeft, node.boundary.bottomRight),
-  }
-) {
+function nearest(node, location, nearestPoint = { point: null, distance: Number.MAX_VALUE }) {
   // If this node is farther away than the nearest point, no need to check here or any of its child nodes
   if (
-    location.x < node.boundary.topLeft.x - nearestPoint.distance || // location too left
-    location.x > node.boundary.bottomRight.x + nearestPoint.distance || // location too right
-    location.y < node.boundary.topLeft.y - nearestPoint.distance || // location too top
-    location.y > node.boundary.bottomRight.y + nearestPoint.distance // location too bottom
+    location.x < node.boundary.x1 - nearestPoint.distance || // location too left
+    location.x > node.boundary.x2 + nearestPoint.distance || // location too right
+    location.y < node.boundary.y1 - nearestPoint.distance || // location too top
+    location.y > node.boundary.y2 + nearestPoint.distance // location too bottom
   ) {
     return nearestPoint;
   }
@@ -225,8 +209,8 @@ function nearest(
     node.bottomRightChild,
   ];
 
-  const isTop = location.y < (node.boundary.topLeft.y + node.boundary.bottomRight.y) / 2;
-  const isLeft = location.x < (node.boundary.topLeft.x + node.boundary.bottomRight.x) / 2;
+  const isTop = location.y < (node.boundary.y1 + node.boundary.y2) / 2;
+  const isLeft = location.x < (node.boundary.x1 + node.boundary.x2) / 2;
 
   // containing node
   nearestPoint = nearest(childNodes[2 * (1 - isTop) + 1 * (1 - isLeft)], location, nearestPoint);
@@ -251,8 +235,8 @@ function distance(p1, p2) {
   return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
 }
 
-function createNode(topLeft, bottomRight) {
-  return { boundary: { topLeft, bottomRight }, points: [] };
+function createNode(boundary) {
+  return { boundary, points: [] };
 }
 
 module.exports = { insert, search, nearest, contains, distance };

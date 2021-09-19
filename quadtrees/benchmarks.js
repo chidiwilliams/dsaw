@@ -37,16 +37,14 @@ function runSearchList(n) {
 
   console.time(`search-list-${n}`);
   for (let i = 0; i < n; i++) {
-    const topLeft = {
-      x: Math.random() * w,
-      y: Math.random() * h,
-    };
+    const x1 = Math.random() * w;
+    const y1 = Math.random() * h;
+
     searchList(points, {
-      topLeft,
-      bottomRight: {
-        x: topLeft.x + Math.random() * (w - topLeft.x),
-        y: topLeft.y + Math.random() * (h - topLeft.y),
-      },
+      x1,
+      y1,
+      x2: x1 + Math.random() * (w - x1),
+      y2: y1 + Math.random() * (h - y1),
     });
   }
   console.timeEnd(`search-list-${n}`);
@@ -55,8 +53,10 @@ function runSearchList(n) {
 function runSearchQT(n) {
   const quadtree = {
     boundary: {
-      topLeft: { x: 0, y: 0 },
-      bottomRight: { x: w, y: h },
+      x1: 0,
+      y1: 0,
+      x2: w,
+      y2: h,
     },
     points: [],
   };
@@ -70,16 +70,14 @@ function runSearchQT(n) {
 
   console.time(`search-tree-${n}`);
   for (let i = 0; i < n; i++) {
-    const topLeft = {
-      x: Math.random() * w,
-      y: Math.random() * h,
-    };
+    const x1 = Math.random() * w;
+    const y1 = Math.random() * h;
+
     search(quadtree, {
-      topLeft,
-      bottomRight: {
-        x: topLeft.x + Math.random() * (w - topLeft.x),
-        y: topLeft.y + Math.random() * (h - topLeft.y),
-      },
+      x1,
+      y1,
+      x2: x1 + Math.random() * (w - x1),
+      y2: y1 + Math.random() * (h - y1),
     });
   }
   console.timeEnd(`search-tree-${n}`);
@@ -104,8 +102,10 @@ function runNearestList(n) {
 function runNearestQT(n) {
   const quadtree = {
     boundary: {
-      topLeft: { x: 0, y: 0 },
-      bottomRight: { x: w, y: h },
+      x1: 0,
+      y1: 0,
+      x2: w,
+      y2: h,
     },
     points: [],
   };

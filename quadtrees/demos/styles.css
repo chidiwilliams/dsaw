@@ -28,7 +28,7 @@ body {
 }
 
 .node {
-  stroke: #ccc;
+  stroke: #6d966d;
   shape-rendering: crispEdges;
   fill: #fafafa;
 }
@@ -43,4 +43,12 @@ body {
   fill: yellow;
   stroke: orange;
   fill-opacity: 1;
+}
+
+button {
+  width: 100px;
+  padding: 5px;
+  font-size: 14px;
+  cursor: pointer;
+  margin: 0 5px;
 }

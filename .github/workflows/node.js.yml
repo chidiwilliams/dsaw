@@ -27,6 +27,10 @@ jobs:
           cache: 'npm'
           cache-dependency-path: quadtrees/package-lock.json
       - run: cd quadtrees
+        working-directory: quadtrees
       - run: npm ci
+        working-directory: quadtrees
       - run: npm test
+        working-directory: quadtrees
       - run: npm run deploy
+        working-directory: quadtrees

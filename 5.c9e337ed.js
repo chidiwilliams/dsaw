@@ -508,8 +508,8 @@ const graphics = function() {
         if (!node.children) {
             const { r , g , b  } = node.color;
             ctx.fillStyle = `rgba(${r},${g},${b})`;
-            const { topLeft , bottomRight  } = node.boundary;
-            ctx.fillRect(topLeft.x, topLeft.y, bottomRight.x - topLeft.x + 1, bottomRight.y - topLeft.y + 1);
+            const { x1 , x2 , y1 , y2  } = node.boundary;
+            ctx.fillRect(x1, y1, x2 - x1 + 1, y2 - y1 + 1);
             return;
         }
         node.children.forEach((child)=>{
@@ -538,14 +538,10 @@ const graphics = function() {
         const { pixels , w , h  } = image;
         tree = {
             boundary: {
-                topLeft: {
-                    x: 0,
-                    y: 0
-                },
-                bottomRight: {
-                    x: w - 1,
-                    y: h - 1
-                }
+                x1: 0,
+                y1: 0,
+                x2: w - 1,
+                y2: h - 1
             }
         };
         compress(pixels, w, h, tree, maxError);
@@ -598,8 +594,8 @@ canvasElement.addEventListener('keydown', (event)=>{
 });
 
 },{"get-pixels":"3yY5b","../image-quadtree":"hWmgP"}],"3yY5b":[function(require,module,exports) {
-var process = require("process");
 var Buffer = require("buffer").Buffer;
+var process = require("process");
 'use strict';
 var path = require('path');
 var ndarray = require('ndarray');
@@ -726,156 +722,7 @@ module.exports = function getPixels(url, type, cb) {
     }
 };
 
-},{"process":"6Upk8","buffer":"bpNHw","path":"4Hxre","ndarray":"kIRaX","omggif":"fj45S","ndarray-pack":"8adQy","through":"h7Oq2","data-uri-to-buffer":"bKl40"}],"6Upk8":[function(require,module,exports) {
-// shim for using process in browser
-var process = module.exports = {
-};
-// cached from whatever global is present so that test runners that stub it
-// don't break things.  But we need to wrap it in a try catch in case it is
-// wrapped in strict mode code which doesn't define any globals.  It's inside a
-// function because try/catches deoptimize in certain engines.
-var cachedSetTimeout;
-var cachedClearTimeout;
-function defaultSetTimout() {
-    throw new Error('setTimeout has not been defined');
-}
-function defaultClearTimeout() {
-    throw new Error('clearTimeout has not been defined');
-}
-(function() {
-    try {
-        if (typeof setTimeout === 'function') cachedSetTimeout = setTimeout;
-        else cachedSetTimeout = defaultSetTimout;
-    } catch (e) {
-        cachedSetTimeout = defaultSetTimout;
-    }
-    try {
-        if (typeof clearTimeout === 'function') cachedClearTimeout = clearTimeout;
-        else cachedClearTimeout = defaultClearTimeout;
-    } catch (e) {
-        cachedClearTimeout = defaultClearTimeout;
-    }
-})();
-function runTimeout(fun) {
-    if (cachedSetTimeout === setTimeout) //normal enviroments in sane situations
-    return setTimeout(fun, 0);
-    // if setTimeout wasn't available but was latter defined
-    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
-        cachedSetTimeout = setTimeout;
-        return setTimeout(fun, 0);
-    }
-    try {
-        // when when somebody has screwed with setTimeout but no I.E. maddness
-        return cachedSetTimeout(fun, 0);
-    } catch (e) {
-        try {
-            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
-            return cachedSetTimeout.call(null, fun, 0);
-        } catch (e1) {
-            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
-            return cachedSetTimeout.call(this, fun, 0);
-        }
-    }
-}
-function runClearTimeout(marker) {
-    if (cachedClearTimeout === clearTimeout) //normal enviroments in sane situations
-    return clearTimeout(marker);
-    // if clearTimeout wasn't available but was latter defined
-    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
-        cachedClearTimeout = clearTimeout;
-        return clearTimeout(marker);
-    }
-    try {
-        // when when somebody has screwed with setTimeout but no I.E. maddness
-        return cachedClearTimeout(marker);
-    } catch (e) {
-        try {
-            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
-            return cachedClearTimeout.call(null, marker);
-        } catch (e1) {
-            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
-            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
-            return cachedClearTimeout.call(this, marker);
-        }
-    }
-}
-var queue = [];
-var draining = false;
-var currentQueue;
-var queueIndex = -1;
-function cleanUpNextTick() {
-    if (!draining || !currentQueue) return;
-    draining = false;
-    if (currentQueue.length) queue = currentQueue.concat(queue);
-    else queueIndex = -1;
-    if (queue.length) drainQueue();
-}
-function drainQueue() {
-    if (draining) return;
-    var timeout = runTimeout(cleanUpNextTick);
-    draining = true;
-    var len = queue.length;
-    while(len){
-        currentQueue = queue;
-        queue = [];
-        while((++queueIndex) < len)if (currentQueue) currentQueue[queueIndex].run();
-        queueIndex = -1;
-        len = queue.length;
-    }
-    currentQueue = null;
-    draining = false;
-    runClearTimeout(timeout);
-}
-process.nextTick = function(fun) {
-    var args = new Array(arguments.length - 1);
-    if (arguments.length > 1) for(var i = 1; i < arguments.length; i++)args[i - 1] = arguments[i];
-    queue.push(new Item(fun, args));
-    if (queue.length === 1 && !draining) runTimeout(drainQueue);
-};
-// v8 likes predictible objects
-function Item(fun, array) {
-    this.fun = fun;
-    this.array = array;
-}
-Item.prototype.run = function() {
-    this.fun.apply(null, this.array);
-};
-process.title = 'browser';
-process.browser = true;
-process.env = {
-};
-process.argv = [];
-process.version = ''; // empty string to avoid regexp issues
-process.versions = {
-};
-function noop() {
-}
-process.on = noop;
-process.addListener = noop;
-process.once = noop;
-process.off = noop;
-process.removeListener = noop;
-process.removeAllListeners = noop;
-process.emit = noop;
-process.prependListener = noop;
-process.prependOnceListener = noop;
-process.listeners = function(name) {
-    return [];
-};
-process.binding = function(name) {
-    throw new Error('process.binding is not supported');
-};
-process.cwd = function() {
-    return '/';
-};
-process.chdir = function(dir) {
-    throw new Error('process.chdir is not supported');
-};
-process.umask = function() {
-    return 0;
-};
-
-},{}],"bpNHw":[function(require,module,exports) {
+},{"buffer":"bpNHw","process":"6Upk8","path":"4Hxre","ndarray":"kIRaX","omggif":"fj45S","ndarray-pack":"8adQy","through":"h7Oq2","data-uri-to-buffer":"bKl40"}],"bpNHw":[function(require,module,exports) {
 /*!
  * The buffer module from node.js, for the browser.
  *
@@ -2272,6 +2119,155 @@ exports.write = function(buffer, value, offset, isLE, mLen, nBytes) {
     eLen += mLen;
     for(; eLen > 0; buffer[offset + i] = e & 255, i += d, e /= 256, eLen -= 8);
     buffer[offset + i - d] |= s * 128;
+};
+
+},{}],"6Upk8":[function(require,module,exports) {
+// shim for using process in browser
+var process = module.exports = {
+};
+// cached from whatever global is present so that test runners that stub it
+// don't break things.  But we need to wrap it in a try catch in case it is
+// wrapped in strict mode code which doesn't define any globals.  It's inside a
+// function because try/catches deoptimize in certain engines.
+var cachedSetTimeout;
+var cachedClearTimeout;
+function defaultSetTimout() {
+    throw new Error('setTimeout has not been defined');
+}
+function defaultClearTimeout() {
+    throw new Error('clearTimeout has not been defined');
+}
+(function() {
+    try {
+        if (typeof setTimeout === 'function') cachedSetTimeout = setTimeout;
+        else cachedSetTimeout = defaultSetTimout;
+    } catch (e) {
+        cachedSetTimeout = defaultSetTimout;
+    }
+    try {
+        if (typeof clearTimeout === 'function') cachedClearTimeout = clearTimeout;
+        else cachedClearTimeout = defaultClearTimeout;
+    } catch (e) {
+        cachedClearTimeout = defaultClearTimeout;
+    }
+})();
+function runTimeout(fun) {
+    if (cachedSetTimeout === setTimeout) //normal enviroments in sane situations
+    return setTimeout(fun, 0);
+    // if setTimeout wasn't available but was latter defined
+    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+        cachedSetTimeout = setTimeout;
+        return setTimeout(fun, 0);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedSetTimeout(fun, 0);
+    } catch (e) {
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+            return cachedSetTimeout.call(null, fun, 0);
+        } catch (e1) {
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+            return cachedSetTimeout.call(this, fun, 0);
+        }
+    }
+}
+function runClearTimeout(marker) {
+    if (cachedClearTimeout === clearTimeout) //normal enviroments in sane situations
+    return clearTimeout(marker);
+    // if clearTimeout wasn't available but was latter defined
+    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+        cachedClearTimeout = clearTimeout;
+        return clearTimeout(marker);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedClearTimeout(marker);
+    } catch (e) {
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+            return cachedClearTimeout.call(null, marker);
+        } catch (e1) {
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+            return cachedClearTimeout.call(this, marker);
+        }
+    }
+}
+var queue = [];
+var draining = false;
+var currentQueue;
+var queueIndex = -1;
+function cleanUpNextTick() {
+    if (!draining || !currentQueue) return;
+    draining = false;
+    if (currentQueue.length) queue = currentQueue.concat(queue);
+    else queueIndex = -1;
+    if (queue.length) drainQueue();
+}
+function drainQueue() {
+    if (draining) return;
+    var timeout = runTimeout(cleanUpNextTick);
+    draining = true;
+    var len = queue.length;
+    while(len){
+        currentQueue = queue;
+        queue = [];
+        while((++queueIndex) < len)if (currentQueue) currentQueue[queueIndex].run();
+        queueIndex = -1;
+        len = queue.length;
+    }
+    currentQueue = null;
+    draining = false;
+    runClearTimeout(timeout);
+}
+process.nextTick = function(fun) {
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) for(var i = 1; i < arguments.length; i++)args[i - 1] = arguments[i];
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) runTimeout(drainQueue);
+};
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+}
+Item.prototype.run = function() {
+    this.fun.apply(null, this.array);
+};
+process.title = 'browser';
+process.browser = true;
+process.env = {
+};
+process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+process.versions = {
+};
+function noop() {
+}
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+process.prependListener = noop;
+process.prependOnceListener = noop;
+process.listeners = function(name) {
+    return [];
+};
+process.binding = function(name) {
+    throw new Error('process.binding is not supported');
+};
+process.cwd = function() {
+    return '/';
+};
+process.chdir = function(dir) {
+    throw new Error('process.chdir is not supported');
+};
+process.umask = function() {
+    return 0;
 };
 
 },{}],"4Hxre":[function(require,module,exports) {
@@ -7896,7 +7892,7 @@ var Buffer = require("buffer").Buffer;
  * @typedef {{x:number, y: number}} Point
  */ /**
  * A Boundary is an enclosed rectangular area.
- * @typedef {{topLeft: Point, bottomRight: Point}} Boundary
+ * @typedef {{x1:number, x2: number, y1: number, y2: number}} Boundary
  */ /**
  * @typedef {{r: number, g: number, b: number}} Color
  */ /**
@@ -7929,50 +7925,44 @@ var Buffer = require("buffer").Buffer;
     }
     // If the node has more than the maximum allowed amount
     // of error, split the node into child nodes
-    const { topLeft , bottomRight  } = node.boundary;
-    const midPoint = {
-        x: Math.floor((topLeft.x + bottomRight.x) / 2),
-        y: Math.floor((topLeft.y + bottomRight.y) / 2)
-    };
+    const { x1 , x2 , y1 , y2  } = node.boundary;
+    const midX = Math.floor((x1 + x2) / 2);
+    const midY = Math.floor((y1 + y2) / 2);
     node.children = [
         createNode({
-            x: topLeft.x,
-            y: topLeft.y
-        }, {
-            x: midPoint.x,
-            y: midPoint.y
+            x1: x1,
+            y1: y1,
+            x2: midX,
+            y2: midY
         }),
         createNode({
-            x: topLeft.x,
-            y: midPoint.y + 1
-        }, {
-            x: midPoint.x,
-            y: bottomRight.y
+            x1: x1,
+            y1: midY + 1,
+            x2: midX,
+            y2: y2
         }),
         createNode({
-            x: midPoint.x + 1,
-            y: topLeft.y
-        }, {
-            x: bottomRight.x,
-            y: midPoint.y
+            x1: midX + 1,
+            y1: y1,
+            x2: x2,
+            y2: midY
         }),
         createNode({
-            x: midPoint.x + 1,
-            y: midPoint.y + 1
-        }, {
-            x: bottomRight.x,
-            y: bottomRight.y
+            x1: midX + 1,
+            y1: midY + 1,
+            x2: x2,
+            y2: y2
         })
     ];
     // ...then compress each of the child nodes
     node.children.forEach((child)=>{
-        const startx = child.boundary.topLeft.x - topLeft.x;
-        const endx = child.boundary.bottomRight.x - topLeft.x;
-        const starty = child.boundary.topLeft.y - topLeft.y;
-        const endy = child.boundary.bottomRight.y - topLeft.y;
+        const startx = child.boundary.x1 - x1;
+        const endx = child.boundary.x2 - x1;
+        const starty = child.boundary.y1 - y1;
+        const endy = child.boundary.y2 - y1;
         const childPixels = slice2d(pixels, startx, endx, starty, endy);
-        const childW = midPoint.x - topLeft.x;
-        const childH = midPoint.y - topLeft.y;
+        const childW = midX - x1;
+        const childH = midY - y1;
         compress(childPixels, childW, childH, child, maxError);
     });
 }
@@ -8039,15 +8029,11 @@ var Buffer = require("buffer").Buffer;
 /**
  * Returns a new ImageQuadtree node
  *
- * @param {Point} topLeft
- * @param {Point} bottomRight
+ * @param {Boundary} boundary
  * @returns {ImageQuadtree}
- */ function createNode(topLeft, bottomRight) {
+ */ function createNode(boundary) {
     return {
-        boundary: {
-            topLeft,
-            bottomRight
-        },
+        boundary,
         children: null,
         color: null,
         error: null

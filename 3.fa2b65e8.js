@@ -24597,31 +24597,29 @@ exports.default = function(event) {
  */ function subdivide(node, nodeCapacity) {
     // Create the four child nodes
     const { x1 , x2 , y1 , y2  } = node.boundary;
-    const midPoint = {
-        x: (x1 + x2) / 2,
-        y: (y1 + y2) / 2
-    };
+    const midX = (x1 + x2) / 2;
+    const midY = (y1 + y2) / 2;
     node.topLeftChild = createNode({
         x1,
         y1,
-        x2: midPoint.x,
-        y2: midPoint.y
+        x2: midX,
+        y2: midY
     });
     node.bottomLeftChild = createNode({
         x1,
-        y1: midPoint.y,
-        x2: midPoint.x,
+        y1: midY,
+        x2: midX,
         y2
     });
     node.topRightChild = createNode({
-        x1: midPoint.x,
+        x1: midX,
         y1,
         x2,
-        y2: midPoint.y
+        y2: midY
     });
     node.bottomRightChild = createNode({
-        x1: midPoint.x,
-        y1: midPoint.y,
+        x1: midX,
+        y1: midY,
         x2,
         y2
     });

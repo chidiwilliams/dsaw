@@ -466,14 +466,10 @@ const data = d3.range(500).map(()=>[
 );
 const quadtree = {
     boundary: {
-        topLeft: {
-            x: 0,
-            y: 0
-        },
-        bottomRight: {
-            x: width,
-            y: height
-        }
+        x1: 0,
+        y1: 0,
+        x2: width,
+        y2: height
     },
     points: [],
     depth: 1
@@ -490,13 +486,13 @@ const svg = d3.select('body').append('svg').attr('width', width).attr('height', 
     draw();
 });
 let rect = svg.selectAll('.node').data(nodes(quadtree)).enter().append('rect').attr('class', 'node').attr('x', function(d) {
-    return d.boundary.topLeft.x;
+    return d.boundary.x1;
 }).attr('y', function(d) {
-    return d.boundary.topLeft.y;
+    return d.boundary.y1;
 }).attr('width', function(d) {
-    return d.boundary.bottomRight.x - d.boundary.topLeft.x;
+    return d.boundary.x2 - d.boundary.x1;
 }).attr('height', function(d) {
-    return d.boundary.bottomRight.y - d.boundary.topLeft.y;
+    return d.boundary.y2 - d.boundary.y1;
 });
 let pts = svg.selectAll('.point').data(points(quadtree)).enter().append('circle').attr('class', 'point').attr('cx', function(d) {
     return d.x;
@@ -560,10 +556,10 @@ function draw() {
 }
 function nearest(node, location, nearestPoint = {
     point: null,
-    distance: distance(node.boundary.topLeft, node.boundary.bottomRight)
+    distance: Number.MAX_VALUE
 }) {
     node.visited = true;
-    if (location.x < node.boundary.topLeft.x - nearestPoint.distance || location.x > node.boundary.bottomRight.x + nearestPoint.distance || location.y < node.boundary.topLeft.y - nearestPoint.distance || location.y > node.boundary.bottomRight.y + nearestPoint.distance // location too bottom
+    if (location.x < node.boundary.x1 - nearestPoint.distance || location.x > node.boundary.x2 + nearestPoint.distance || location.y < node.boundary.y1 - nearestPoint.distance || location.y > node.boundary.y2 + nearestPoint.distance // location too bottom
     ) return nearestPoint;
     if (!node.topLeftChild) {
         node.points.forEach((point)=>{
@@ -582,8 +578,8 @@ function nearest(node, location, nearestPoint = {
         node.bottomLeftChild,
         node.bottomRightChild, 
     ];
-    const isTop = location.y < (node.boundary.topLeft.y + node.boundary.bottomRight.y) / 2;
-    const isLeft = location.x < (node.boundary.topLeft.x + node.boundary.bottomRight.x) / 2;
+    const isTop = location.y < (node.boundary.y1 + node.boundary.y2) / 2;
+    const isLeft = location.x < (node.boundary.x1 + node.boundary.x2) / 2;
     nearestPoint = nearest(childNodes[2 * (1 - isTop) + 1 * (1 - isLeft)], location, nearestPoint);
     nearestPoint = nearest(childNodes[2 * (1 - isTop) + 1 * isLeft], location, nearestPoint);
     nearestPoint = nearest(childNodes[2 * isTop + 1 * (1 - isLeft)], location, nearestPoint);
@@ -24608,31 +24604,29 @@ exports.default = function(event) {
  */ function subdivide(node, nodeCapacity) {
     // Create the four child nodes
     const { x1 , x2 , y1 , y2  } = node.boundary;
-    const midPoint = {
-        x: (x1 + x2) / 2,
-        y: (y1 + y2) / 2
-    };
+    const midX = (x1 + x2) / 2;
+    const midY = (y1 + y2) / 2;
     node.topLeftChild = createNode({
         x1,
         y1,
-        x2: midPoint.x,
-        y2: midPoint.y
+        x2: midX,
+        y2: midY
     });
     node.bottomLeftChild = createNode({
         x1,
-        y1: midPoint.y,
-        x2: midPoint.x,
+        y1: midY,
+        x2: midX,
         y2
     });
     node.topRightChild = createNode({
-        x1: midPoint.x,
+        x1: midX,
         y1,
         x2,
-        y2: midPoint.y
+        y2: midY
     });
     node.bottomRightChild = createNode({
-        x1: midPoint.x,
-        y1: midPoint.y,
+        x1: midX,
+        y1: midY,
         x2,
         y2
     });

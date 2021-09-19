@@ -51,13 +51,8 @@ const graphics = (function () {
     if (!node.children) {
       const { r, g, b } = node.color;
       ctx.fillStyle = `rgba(${r},${g},${b})`;
-      const { topLeft, bottomRight } = node.boundary;
-      ctx.fillRect(
-        topLeft.x,
-        topLeft.y,
-        bottomRight.x - topLeft.x + 1,
-        bottomRight.y - topLeft.y + 1
-      );
+      const { x1, x2, y1, y2 } = node.boundary;
+      ctx.fillRect(x1, y1, x2 - x1 + 1, y2 - y1 + 1);
       return;
     }
 
@@ -93,8 +88,10 @@ const graphics = (function () {
     const { pixels, w, h } = image;
     tree = {
       boundary: {
-        topLeft: { x: 0, y: 0 },
-        bottomRight: { x: w - 1, y: h - 1 },
+        x1: 0,
+        y1: 0,
+        x2: w - 1,
+        y2: h - 1,
       },
     };
     compress(pixels, w, h, tree, maxError);

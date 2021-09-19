@@ -1,15 +1,19 @@
 const d3 = require('d3');
-const { insert, distance } = require('../quadtree');
+const { insert, distance, distanceToBoundary } = require('../quadtree');
 
-const width = 750;
+const width = Math.min(window.innerWidth, 750);
 const height = 300;
 
-const data = d3.range(500).map(() => [Math.random() * width, Math.random() * height]);
+const data = d3
+  .range((width * height) / 600)
+  .map(() => [Math.random() * width, Math.random() * height]);
 
 const quadtree = {
   boundary: {
-    topLeft: { x: 0, y: 0 },
-    bottomRight: { x: width, y: height },
+    x1: 0,
+    y1: 0,
+    x2: width,
+    y2: height,
   },
   points: [],
   depth: 1,
@@ -36,16 +40,16 @@ let rect = svg
   .append('rect')
   .attr('class', 'node')
   .attr('x', function (d) {
-    return d.boundary.topLeft.x;
+    return d.boundary.x1;
   })
   .attr('y', function (d) {
-    return d.boundary.topLeft.y;
+    return d.boundary.y1;
   })
   .attr('width', function (d) {
-    return d.boundary.bottomRight.x - d.boundary.topLeft.x;
+    return d.boundary.x2 - d.boundary.x1;
   })
   .attr('height', function (d) {
-    return d.boundary.bottomRight.y - d.boundary.topLeft.y;
+    return d.boundary.y2 - d.boundary.y1;
   });
 
 let pts = svg
@@ -124,29 +128,17 @@ function draw() {
   rect.style('fill', (d) => (d.visited ? color(d.depth) : 'none'));
 }
 
-function nearest(
-  node,
-  location,
-  nearestPoint = {
-    point: null,
-    distance: distance(node.boundary.topLeft, node.boundary.bottomRight),
-  }
-) {
+function nearest(node, location, nearestPoint = { point: null, distance: Number.MAX_VALUE }) {
   node.visited = true;
 
-  if (
-    location.x < node.boundary.topLeft.x - nearestPoint.distance || // location too left
-    location.x > node.boundary.bottomRight.x + nearestPoint.distance || // location too right
-    location.y < node.boundary.topLeft.y - nearestPoint.distance || // location too top
-    location.y > node.boundary.bottomRight.y + nearestPoint.distance // location too bottom
-  ) {
+  if (distanceToBoundary(location, node.boundary) > nearestPoint.distance) {
     return nearestPoint;
   }
 
   if (!node.topLeftChild) {
     node.points.forEach((point) => {
       point.scanned = true;
-      const d = distance(point, location);
+      const d = distance(location, point);
       if (d < nearestPoint.distance) {
         nearestPoint.point = point;
         nearestPoint.distance = d;
@@ -162,8 +154,8 @@ function nearest(
     node.bottomRightChild,
   ];
 
-  const isTop = location.y < (node.boundary.topLeft.y + node.boundary.bottomRight.y) / 2;
-  const isLeft = location.x < (node.boundary.topLeft.x + node.boundary.bottomRight.x) / 2;
+  const isTop = location.y < (node.boundary.y1 + node.boundary.y2) / 2;
+  const isLeft = location.x < (node.boundary.x1 + node.boundary.x2) / 2;
 
   nearestPoint = nearest(childNodes[2 * (1 - isTop) + 1 * (1 - isLeft)], location, nearestPoint);
   nearestPoint = nearest(childNodes[2 * (1 - isTop) + 1 * isLeft], location, nearestPoint);

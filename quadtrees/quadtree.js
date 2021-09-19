@@ -93,15 +93,12 @@ function contains(boundary, point) {
 function subdivide(node, nodeCapacity) {
   // Create the four child nodes
   const { x1, x2, y1, y2 } = node.boundary;
-  const midPoint = {
-    x: (x1 + x2) / 2,
-    y: (y1 + y2) / 2,
-  };
-
-  node.topLeftChild = createNode({ x1, y1, x2: midPoint.x, y2: midPoint.y });
-  node.bottomLeftChild = createNode({ x1, y1: midPoint.y, x2: midPoint.x, y2 });
-  node.topRightChild = createNode({ x1: midPoint.x, y1, x2, y2: midPoint.y });
-  node.bottomRightChild = createNode({ x1: midPoint.x, y1: midPoint.y, x2, y2 });
+  const midX = (x1 + x2) / 2;
+  const midY = (y1 + y2) / 2;
+  node.topLeftChild = createNode({ x1, y1, x2: midX, y2: midY });
+  node.bottomLeftChild = createNode({ x1, y1: midY, x2: midX, y2 });
+  node.topRightChild = createNode({ x1: midX, y1, x2, y2: midY });
+  node.bottomRightChild = createNode({ x1: midX, y1: midY, x2, y2 });
 
   // Move the points in the node to the child node that should contain the point.
   // Again, we can try inserting each point into all the child nodes. The wrong ones
@@ -225,6 +222,23 @@ function nearest(node, location, nearestPoint = { point: null, distance: Number.
 }
 
 /**
+ * Returns the distance between a point and a boundary as the
+ * maximum distance along each of the axes
+ *
+ * @param {Point} point
+ * @param {Boundary} boundary
+ * @returns
+ */
+function distanceToBoundary(point, boundary) {
+  return Math.max(
+    boundary.x1 - point.x,
+    point.x - boundary.x2,
+    boundary.y1 - point.y,
+    point.y - boundary.y2
+  );
+}
+
+/**
  * Returns the Euclidean distance between two points
  *
  * @param {Point} p1
@@ -239,4 +253,4 @@ function createNode(boundary) {
   return { boundary, points: [] };
 }
 
-module.exports = { insert, search, nearest, contains, distance };
+module.exports = { insert, search, nearest, contains, distance, distanceToBoundary };

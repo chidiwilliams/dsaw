@@ -1,8 +1,10 @@
 const d3 = require('d3');
 const { insert } = require('../quadtree');
 
-const width = 750;
+const width = Math.min(window.innerWidth, 750);
 const height = 300;
+
+document.querySelector('#target').style.width = `${width}px`;
 
 const svg = d3.select('#target').append('svg').attr('width', width).attr('height', height);
 

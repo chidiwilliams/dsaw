@@ -5,7 +5,7 @@
 
 /**
  * A Boundary is an enclosed rectangular area.
- * @typedef {{topLeft: Point, bottomRight: Point}} Boundary
+ * @typedef {{x1:number, x2: number, y1: number, y2: number}} Boundary
  */
 
 /**
@@ -48,29 +48,27 @@ function compress(pixels, w, h, node, maxError) {
   // If the node has more than the maximum allowed amount
   // of error, split the node into child nodes
 
-  const { topLeft, bottomRight } = node.boundary;
-  const midPoint = {
-    x: Math.floor((topLeft.x + bottomRight.x) / 2),
-    y: Math.floor((topLeft.y + bottomRight.y) / 2),
-  };
+  const { x1, x2, y1, y2 } = node.boundary;
+  const midX = Math.floor((x1 + x2) / 2);
+  const midY = Math.floor((y1 + y2) / 2);
 
   node.children = [
-    createNode({ x: topLeft.x, y: topLeft.y }, { x: midPoint.x, y: midPoint.y }), // Top-left
-    createNode({ x: topLeft.x, y: midPoint.y + 1 }, { x: midPoint.x, y: bottomRight.y }), // Bottom-left
-    createNode({ x: midPoint.x + 1, y: topLeft.y }, { x: bottomRight.x, y: midPoint.y }), // Top-right
-    createNode({ x: midPoint.x + 1, y: midPoint.y + 1 }, { x: bottomRight.x, y: bottomRight.y }), // Bottom-right
+    createNode({ x1: x1, y1: y1, x2: midX, y2: midY }), // Top-left
+    createNode({ x1: x1, y1: midY + 1, x2: midX, y2: y2 }), // Bottom-left
+    createNode({ x1: midX + 1, y1: y1, x2: x2, y2: midY }), // Top-right
+    createNode({ x1: midX + 1, y1: midY + 1, x2: x2, y2: y2 }), // Bottom-right
   ];
 
   // ...then compress each of the child nodes
   node.children.forEach((child) => {
-    const startx = child.boundary.topLeft.x - topLeft.x;
-    const endx = child.boundary.bottomRight.x - topLeft.x;
-    const starty = child.boundary.topLeft.y - topLeft.y;
-    const endy = child.boundary.bottomRight.y - topLeft.y;
+    const startx = child.boundary.x1 - x1;
+    const endx = child.boundary.x2 - x1;
+    const starty = child.boundary.y1 - y1;
+    const endy = child.boundary.y2 - y1;
     const childPixels = slice2d(pixels, startx, endx, starty, endy);
 
-    const childW = midPoint.x - topLeft.x;
-    const childH = midPoint.y - topLeft.y;
+    const childW = midX - x1;
+    const childH = midY - y1;
 
     compress(childPixels, childW, childH, child, maxError);
   });
@@ -152,12 +150,11 @@ function slice2d(arr, startx, endx, starty, endy) {
 /**
  * Returns a new ImageQuadtree node
  *
- * @param {Point} topLeft
- * @param {Point} bottomRight
+ * @param {Boundary} boundary
  * @returns {ImageQuadtree}
  */
-function createNode(topLeft, bottomRight) {
-  return { boundary: { topLeft, bottomRight }, children: null, color: null, error: null };
+function createNode(boundary) {
+  return { boundary, children: null, color: null, error: null };
 }
 
 module.exports = { compress };

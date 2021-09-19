@@ -1,9 +1,9 @@
 const d3 = require('d3');
 
-const width = 750;
+const width = Math.min(window.innerWidth, 750);
 const height = 300;
 
-const data = d3.range(300).map(function () {
+const data = d3.range((width * height) / 600).map(function () {
   return [Math.random() * width, Math.random() * height];
 });
 

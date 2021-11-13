@@ -6,7 +6,7 @@ const alphabet = [
 ];
 
 /**
- * @typedef {{children: Trie[], isEndOfWord?: boolean}} Trie
+ * @typedef {{children: Trie[], isEndOfWord?: boolean, checked?: string }} Trie
  */
 
 /**
@@ -71,9 +71,13 @@ function hasPrefix(tree, prefix) {
 
     // If there is no child tree, there
     // are no words starting with the prefix
-    if (!node.children[index]) return false;
+    if (!node.children[index]) {
+      node.checked = 'failed';
+      return false;
+    }
 
     node = node.children[index];
+    node.checked = 'passed';
   }
 
   // If child trees exist till the end of the

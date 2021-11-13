@@ -1,7 +1,8 @@
 const d3 = require('d3');
 
-function updateTree(text, tree, toD3Tree, dictionary, nodeSpacing, svg) {
-  const root = tree(d3.hierarchy(toD3Tree(dictionary.parse(text))));
+function updateTree(trie, toD3Tree, nodeSpacing, svg) {
+  const tree = d3.tree().nodeSize([nodeSpacing.x, nodeSpacing.y]);
+  const root = tree(d3.hierarchy(toD3Tree(trie)));
 
   // The tree is 90 deg. rotated, so the x, y values are reversed from here on
 
@@ -20,12 +21,15 @@ function updateTree(text, tree, toD3Tree, dictionary, nodeSpacing, svg) {
     .append('g')
     .classed('graph', () => true)
     .merge(graph)
-    .attr('transform', () => `translate(${20},${20 + height / 2})`);
+    .attr('transform', () => `translate(${20},${(2 / 3) * height})`);
   graph.exit().remove();
 
   const nodes = newGraph
     .selectAll('g.node')
-    .data(root.descendants(), (d) => `${d.data.name}-${d.depth}`);
+    .data(
+      root.descendants(),
+      (d) => `${d.data.name}-${d.data.isEndOfWord}-${d.depth}-${d.data.checked}`
+    );
 
   const newNodes = nodes
     .enter()
@@ -40,7 +44,9 @@ function updateTree(text, tree, toD3Tree, dictionary, nodeSpacing, svg) {
     .attr('text-anchor', (d) => (d.children ? 'end' : 'start'));
   newNodes
     .merge(nodes)
-    .classed('word', (d) => !!d.data.isWord)
+    .classed('word', (d) => !!d.data.isEndOfWord)
+    .classed('checked-passed', (d) => d.data.checked === 'passed')
+    .classed('checked-failed', (d) => d.data.checked === 'failed')
     .attr('transform', (d) => `translate(${d.y},${d.x})`);
   nodes.exit().remove();
 

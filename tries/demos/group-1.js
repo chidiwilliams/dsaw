@@ -49,14 +49,13 @@ function toD3Tree(tree, name = '', d = 0) {
 }
 
 const nodeSpacing = { x: 15, y: 100 };
-let tree = d3.tree().nodeSize([nodeSpacing.x, nodeSpacing.y]);
 
 const value =
   'railway\nfruit\ndrain\nanthem\nelbow\nappliance\ndock\ntramp\nkick\nsort\nsquare\nthrone\ndaughter\ntub\ndirt\nclam\nwrist\n';
 d3.select('#input')
   .property('value', value)
   .on('input', (evt) => {
-    updateTree(evt.target.value, tree, toD3Tree, dictionary, nodeSpacing, svg);
+    updateTree(dictionary.parse(evt.target.value), toD3Tree, nodeSpacing, svg);
   });
 
-updateTree(value, tree, toD3Tree, dictionary, nodeSpacing, svg);
+updateTree(dictionary.parse(value), toD3Tree, nodeSpacing, svg);

@@ -25,7 +25,7 @@ function toD3Tree(tree, name = '', d = 0) {
     return { name: tree, children: [] };
   }
 
-  const node = { name, children: [], isWord: tree.isWord };
+  const node = { name, children: [], isEndOfWord: tree.isEndOfWord };
   tree.children.forEach((child, i) => {
     node.children.push(toD3Tree(child, alphabet[i], d + 1));
   });
@@ -33,14 +33,13 @@ function toD3Tree(tree, name = '', d = 0) {
 }
 
 const nodeSpacing = { x: 15, y: 100 };
-let tree = d3.tree().nodeSize([nodeSpacing.x, nodeSpacing.y]);
 
 const value =
   'fruit\ndrain\ntrip\nanthem\nelbow\nsolid\nin\nappliance\ndock\ntribute\nkick\nsort\nso\nsquare\neloquent\na\nthrive\n';
 d3.select('#input')
   .property('value', value)
   .on('input', (evt) => {
-    updateTree(evt.target.value, tree, toD3Tree, dictionary, nodeSpacing, svg);
+    updateTree(dictionary.parse(evt.target.value), toD3Tree, nodeSpacing, svg);
   });
 
-updateTree(value, tree, toD3Tree, dictionary, nodeSpacing, svg);
+updateTree(dictionary.parse(value), toD3Tree, nodeSpacing, svg);

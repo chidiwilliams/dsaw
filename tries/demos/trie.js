@@ -1,41 +1,17 @@
 const d3 = require('d3');
-const { alphabet } = require('../trie');
-const { insert } = require('../trie');
 const { updateTree } = require('./graph');
-
-const dictionary = (() => {
-  function parse(text) {
-    const words = text.split('\n').filter((t) => t.length > 0);
-
-    const dictionary = { children: new Array(26) };
-    words.forEach((word) => {
-      insert(dictionary, word);
-    });
-    return dictionary;
-  }
-
-  return { parse };
-})();
+const { dictionary, toD3Tree } = require('./trie-fns');
 
 const svg = d3.select('#chart').append('svg').attr('width', '100%').attr('height', '100%');
 
-function toD3Tree(tree, name = '', d = 0) {
-  const node = { name, children: [], isWord: tree.isWord };
-  tree.children.forEach((child, i) => {
-    node.children.push(toD3Tree(child, alphabet[i], d + 1));
-  });
-  return node;
-}
-
 const nodeSpacing = { x: 15, y: 50 };
-let tree = d3.tree().nodeSize([nodeSpacing.x, nodeSpacing.y]);
 
 const value =
   'fruit\ndrain\ntrip\nanthem\nsolid\nin\ndock\ntribute\nkick\nsort\nso\nsquare\na\nthrive\n';
 d3.select('#input')
   .property('value', value)
   .on('input', (evt) => {
-    updateTree(evt.target.value, tree, toD3Tree, dictionary, nodeSpacing, svg);
+    updateTree(dictionary.parse(evt.target.value), toD3Tree, nodeSpacing, svg);
   });
 
-updateTree(value, tree, toD3Tree, dictionary, nodeSpacing, svg);
+updateTree(dictionary.parse(value), toD3Tree, nodeSpacing, svg);

@@ -7,9 +7,9 @@
     "build": "npm run clean && npm run build:quadtrees && npm run build:tries",
     "build:quadtrees": "parcel build quadtrees/demos/*.html --dist-dir dist/quadtrees --public-url .",
     "build:tries": "parcel build tries/demos/*.html --dist-dir dist/tries --public-url .",
-    "test": "node quadtrees/*.test.js && node tries/*.test.js",
+    "deploy": "npm run build && gh-pages -d dist",
     "dev:tries": "parcel tries/demos/*.html",
-    "deploy": "npm run build && gh-pages -d dist"
+    "test": "node quadtrees/*.test.js && node tries/*.test.js"
   },
   "repository": {
     "type": "git",

@@ -7,6 +7,10 @@ html {
   font-size: 14px;
 }
 
+* {
+  box-sizing: border-box;
+}
+
 .container {
   display: flex;
   flex-wrap: wrap;
@@ -20,6 +24,9 @@ html {
 
 #input {
   flex: 0 150px;
+}
+
+textarea {
   width: 100%;
   padding: 10px;
   border: 1px solid #bbb;
@@ -27,5 +34,29 @@ html {
 }
 
 .node.word circle {
-  fill: #ff7ce0;
+  fill: #df9418;
+}
+
+.node.checked-passed circle {
+  fill: #09d73a;
+}
+
+.node.checked-failed circle {
+  fill: #ed0f0f;
+}
+
+label {
+  display: block;
+}
+
+.sidebar {
+  flex: 0 300px;
+}
+
+textarea#search {
+  background-color: #ed0f0f55;
+}
+
+textarea#search.matched {
+  background-color: #09d73a55;
 }

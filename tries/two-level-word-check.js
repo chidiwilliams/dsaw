@@ -13,28 +13,28 @@ function insert(dictionary, word) {
   // Create a child dictionary for words starting with the first character
   const firstLetterIndex = alphabet.indexOf(word[0]);
   if (!current.children[firstLetterIndex]) {
-    // We've added an `isWord` flag to denote whether this child dictionary is itself a word
-    current.children[firstLetterIndex] = { isWord: false, children: new Array(26) };
+    // We've added an `isEndOfWord` flag to denote whether this child dictionary is itself a word
+    current.children[firstLetterIndex] = { isEndOfWord: false, children: new Array(26) };
   }
   // Update current to point to the child dictionary
   current = current.children[firstLetterIndex];
 
   // If the word has only one character, then the child dictionary is a word
   if (word.length === 1) {
-    current.isWord = true;
+    current.isEndOfWord = true;
     return;
   }
 
   // Create a child dictionary for words starting with the second character
   const secondLetterIndex = alphabet.indexOf(word[1]);
   if (!current.children[secondLetterIndex]) {
-    current.children[secondLetterIndex] = { isWord: false, children: new Array(26) };
+    current.children[secondLetterIndex] = { isEndOfWord: false, children: new Array(26) };
   }
   current = current.children[secondLetterIndex];
 
   // If the word has two characters, then the current child dictionary is a word
   if (word.length === 2) {
-    current.isWord = true;
+    current.isEndOfWord = true;
     return;
   }
 

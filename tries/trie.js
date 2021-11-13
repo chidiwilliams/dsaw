@@ -13,7 +13,7 @@ function insert(dictionary, word) {
     // Create a new child dictionary for this character
     const index = alphabet.indexOf(word[i]);
     if (!current.children[index]) {
-      current.children[index] = { isWord: false, children: new Array(26) };
+      current.children[index] = { isEndOfWord: false, children: new Array(26) };
     }
 
     // Update the current child dictionary
@@ -21,7 +21,7 @@ function insert(dictionary, word) {
   }
 
   // The deepest child dictionary represents the last character in the word
-  current.isWord = true;
+  current.isEndOfWord = true;
 }
 
 function hasPrefix(tree, prefix) {
@@ -78,7 +78,7 @@ function startsWith(dictionary, prefix) {
 // Collects the words in the dictionary and its children into `words`
 function collectWords(dictionary, currentWord, words) {
   // If the current dictionary is the end of the word, collect the word
-  if (dictionary.isWord) words.push(currentWord);
+  if (dictionary.isEndOfWord) words.push(currentWord);
 
   // Collect the words from each child dictionary
   dictionary.children.forEach((childNode, i) => {

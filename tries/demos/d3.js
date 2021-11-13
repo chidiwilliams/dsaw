@@ -54,6 +54,24 @@ function updateTree(tree, nodeSpacing) {
     .attr('transform', () => `translate(${20},${(3 / 5) * height})`);
   graph.exit().remove();
 
+  const links = newGraph.selectAll('path').data(root.links());
+  links
+    .enter()
+    .append('path')
+    .attr('fill', 'none')
+    .attr('stroke', '#aaa')
+    .attr('stroke-opacity', 0.4)
+    .attr('stroke-width', 1.5)
+    .merge(links)
+    .attr(
+      'd',
+      d3
+        .linkHorizontal()
+        .x((d) => d.y)
+        .y((d) => d.x)
+    );
+  links.exit().remove();
+
   const nodes = newGraph
     .selectAll('g.node')
     .data(
@@ -79,24 +97,6 @@ function updateTree(tree, nodeSpacing) {
     .classed('checked-failed', (d) => d.data.checked === 'failed')
     .attr('transform', (d) => `translate(${d.y},${d.x})`);
   nodes.exit().remove();
-
-  const links = newGraph.selectAll('path').data(root.links());
-  links
-    .enter()
-    .append('path')
-    .attr('fill', 'none')
-    .attr('stroke', '#aaa')
-    .attr('stroke-opacity', 0.4)
-    .attr('stroke-width', 1.5)
-    .merge(links)
-    .attr(
-      'd',
-      d3
-        .linkHorizontal()
-        .x((d) => d.y)
-        .y((d) => d.x)
-    );
-  links.exit().remove();
 }
 
 module.exports = { updateTree, getToD3Tree };

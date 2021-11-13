@@ -5,6 +5,34 @@ const alphabet = [
   's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
 ];
 
+/**
+ * A Node in the dictionary
+ * @typedef {{children: (Trie[]), isEndOfWord?: boolean}} Trie
+ */
+
+/**
+ * Creates a new dictionary from the text
+ * @param {string} text
+ * @returns {Trie}
+ */
+function parse(text) {
+  const words = text.split('\n').filter((t) => t.length > 0);
+
+  const dictionary = { children: new Array(26) };
+  words.forEach((word) => {
+    insert(dictionary, word);
+  });
+  return dictionary;
+}
+
+/**
+ * Adds the word into the dictionary. At the second level
+ * of the tree, it adds the word as a child node.
+ *
+ * @param {Trie} dictionary
+ * @param {string} word
+ * @returns
+ */
 function insert(dictionary, word) {
   // As we go deeper into the dictionary, we need to keep track
   // of the current level we're on, starting from the root dictionary
@@ -42,36 +70,4 @@ function insert(dictionary, word) {
   current.children.push(word);
 }
 
-function startsWith(dictionary, prefix) {
-  const matches = [];
-
-  let current = dictionary;
-
-  if (prefix.length > 2) {
-    const grandChild =
-      dictionary.children[alphabet.indexOf(prefix[0])].children[alphabet.indexOf(prefix[1])];
-    return getMatches(grandChild, prefix);
-  }
-
-  return matches;
-}
-
-// Returns the prefix matches from a list
-function getMatches(dictionary, prefix) {
-  const matches = [];
-
-  for (let i = 0; i < dictionary.length; i++) {
-    const word = dictionary[i];
-
-    let prefixed = true;
-    for (let j = 0; j < prefix.length; j++) {
-      if (prefix[j] !== word[j]) prefixed = false;
-    }
-
-    if (prefixed) matches.push(word);
-  }
-
-  return matches;
-}
-
-module.exports = { insert };
+module.exports = { insert, parse };

@@ -1,10 +1,9 @@
 const d3 = require('d3');
-const { alphabet } = require('../trie');
-const { updateTree } = require('./graph');
-const { toD3Tree, dictionary } = require('./trie-fns');
+const { insertAll, hasPrefix } = require('../trie');
+const { getToD3Tree, updateTree } = require('./d3');
 
-const svg = d3.select('#chart').append('svg').attr('width', '100%').attr('height', '100%');
 const nodeSpacing = { x: 12, y: 25 };
+const toD3Tree = getToD3Tree(0);
 
 let text = 'entrepreneurship';
 let search = 'rshi';
@@ -25,30 +24,14 @@ const searchInput = d3
   });
 
 function update(text, search) {
-  const trie = dictionary.insertAll(getSuffixes(text));
-  const matched = checkPrefix(trie, search);
-  updateTree(trie, toD3Tree, nodeSpacing, svg);
+  const trie = insertAll(getSuffixes(text));
+  const matched = hasPrefix(trie, search);
+  updateTree(toD3Tree(trie), nodeSpacing);
   searchInput.classed('matched', () => matched);
 }
 
 function getSuffixes(text) {
   return Array.from({ length: text.length }, (_, i) => text.substring(i));
-}
-
-function checkPrefix(root, prefix) {
-  let node = root;
-  for (let i = 0; i < prefix.length; i++) {
-    const index = alphabet.indexOf(prefix[i]);
-    if (!node.children[index]) {
-      node.checked = 'failed';
-      return false;
-    }
-
-    node = node.children[index];
-    node.checked = 'passed';
-  }
-
-  return true;
 }
 
 update(text, search);

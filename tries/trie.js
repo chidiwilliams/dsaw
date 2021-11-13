@@ -5,6 +5,38 @@ const alphabet = [
   's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
 ];
 
+/**
+ * @typedef {{children: Trie[], isEndOfWord?: boolean}} Trie
+ */
+
+/**
+ * Creates a new dictionary from the text
+ * @param {string} text
+ * @returns {Trie}
+ */
+function parse(text) {
+  const words = text.split('\n').filter((t) => t.length > 0);
+  return insertAll(words);
+}
+
+/**
+ * Creates a new dictionary from a list of words
+ * @param {string[]} words
+ * @returns {Trie}
+ */
+function insertAll(words) {
+  const dictionary = { children: new Array(26) };
+  words.forEach((word) => {
+    insert(dictionary, word);
+  });
+  return dictionary;
+}
+
+/**
+ * Adds a word to the dictionary
+ * @param {Trie} dictionary
+ * @param {string} word
+ */
 function insert(dictionary, word) {
   let current = dictionary;
 
@@ -24,8 +56,14 @@ function insert(dictionary, word) {
   current.isEndOfWord = true;
 }
 
+/**
+ * Returns true if the tree contains the prefix
+ * @param {Trie} tree
+ * @param {string} prefix
+ * @returns
+ */
 function hasPrefix(tree, prefix) {
-  let current = tree;
+  let node = tree;
 
   // For each character in the prefix...
   for (let i = 0; i < prefix.length; i++) {
@@ -33,9 +71,9 @@ function hasPrefix(tree, prefix) {
 
     // If there is no child tree, there
     // are no words starting with the prefix
-    if (!current.children[index]) return false;
+    if (!node.children[index]) return false;
 
-    current = current.children[index];
+    node = node.children[index];
   }
 
   // If child trees exist till the end of the
@@ -43,17 +81,12 @@ function hasPrefix(tree, prefix) {
   return true;
 }
 
-function hasPrefix(root, prefix) {
-  let node = root;
-  for (let i = 0; i < prefix.length; i++) {
-    const index = alphabet.indexOf(prefix[i]);
-    if (!node.children[index]) return false;
-    node = node.children[index];
-  }
-
-  return true;
-}
-
+/**
+ * Returns all the words in the dictionary that start with the prefix
+ * @param {Trie} dictionary
+ * @param {string} prefix
+ * @returns
+ */
 function startsWith(dictionary, prefix) {
   let current = dictionary;
 
@@ -75,7 +108,12 @@ function startsWith(dictionary, prefix) {
   return matches;
 }
 
-// Collects the words in the dictionary and its children into `words`
+/**
+ * Collects all the words in the dictionary, prefixing them with `currentWord`
+ * @param {Trie} dictionary
+ * @param {string} currentWord
+ * @param {string[]} words
+ */
 function collectWords(dictionary, currentWord, words) {
   // If the current dictionary is the end of the word, collect the word
   if (dictionary.isEndOfWord) words.push(currentWord);
@@ -86,22 +124,4 @@ function collectWords(dictionary, currentWord, words) {
   });
 }
 
-function contains(text, substr) {
-  for (let i = 0; i <= text.length - substr.length; i++) {
-    let j = 0;
-
-    for (j = 0; j < substr.length; j++) {
-      if (text[i + j] !== substr[j]) {
-        break;
-      }
-    }
-
-    if (j === substr.length) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-module.exports = { insert, startsWith, contains, hasPrefix, alphabet };
+module.exports = { insert, startsWith, hasPrefix, alphabet, parse, insertAll };

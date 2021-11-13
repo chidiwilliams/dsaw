@@ -1,8 +1,38 @@
 const d3 = require('d3');
+const { alphabet } = require('../trie');
 
-function updateTree(trie, toD3Tree, nodeSpacing, svg) {
-  const tree = d3.tree().nodeSize([nodeSpacing.x, nodeSpacing.y]);
-  const root = tree(d3.hierarchy(toD3Tree(trie)));
+/**
+ * @typedef {{name: string, children: D3Tree[], isEndOfWord?: boolean, checked?: boolean}} D3Tree
+ */
+
+const svg = d3.select('#chart').append('svg').attr('width', '100%').attr('height', '100%');
+
+/**
+ * Returns a function that converts a tree to a D3-friendly version
+ * @param {number} maxDepth Maximum depth where to put the full words (should be 0 for a regular prefix)
+ * @returns {(tree: any, name?: string, depth?: number) => D3Tree}
+ */
+function getToD3Tree(maxDepth = 0) {
+  return function toD3Tree(tree, name = '', depth = 0) {
+    if (maxDepth && depth === maxDepth + 1) {
+      return { name: tree, children: [] };
+    }
+
+    const node = { name, children: [], isEndOfWord: tree.isEndOfWord, checked: tree.checked };
+    (maxDepth === 1 ? tree : tree.children).forEach((child, i) => {
+      node.children.push(toD3Tree(child, alphabet[i], depth + 1));
+    });
+    return node;
+  };
+}
+
+/**
+ * Renders the tree
+ * @param {D3Tree} tree
+ * @param {{x:number, y:number}} nodeSpacing
+ */
+function updateTree(tree, nodeSpacing) {
+  const root = d3.tree().nodeSize([nodeSpacing.x, nodeSpacing.y])(d3.hierarchy(tree));
 
   // The tree is 90 deg. rotated, so the x, y values are reversed from here on
 
@@ -21,7 +51,7 @@ function updateTree(trie, toD3Tree, nodeSpacing, svg) {
     .append('g')
     .classed('graph', () => true)
     .merge(graph)
-    .attr('transform', () => `translate(${20},${(2 / 3) * height})`);
+    .attr('transform', () => `translate(${20},${(3 / 5) * height})`);
   graph.exit().remove();
 
   const nodes = newGraph
@@ -69,4 +99,4 @@ function updateTree(trie, toD3Tree, nodeSpacing, svg) {
   links.exit().remove();
 }
 
-module.exports = { updateTree };
+module.exports = { updateTree, getToD3Tree };

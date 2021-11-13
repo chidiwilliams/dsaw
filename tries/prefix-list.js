@@ -1,4 +1,9 @@
-// Returns words in the dictionary that start with the prefix
+/**
+ * Returns words in the dictionary that start with the prefix
+ * @param {string[]} dictionary
+ * @param {string} prefix
+ * @returns
+ */
 function startsWith(dictionary, prefix) {
   const matches = [];
 
@@ -28,6 +33,28 @@ function startsWith(dictionary, prefix) {
   return matches;
 }
 
-const dictionary = ['ant', 'antelope', 'bear', 'cat', 'dog'];
-startsWith(dictionary, 'ant'); // ['ant', 'antelope']
-startsWith(dictionary, 'lion'); // []
+/**
+ * Returns true if text contains the substring
+ * @param {string} text
+ * @param {string} substr
+ * @returns {boolean}
+ */
+function contains(text, substr) {
+  for (let i = 0; i <= text.length - substr.length; i++) {
+    let j = 0;
+
+    for (j = 0; j < substr.length; j++) {
+      if (text[i + j] !== substr[j]) {
+        break;
+      }
+    }
+
+    if (j === substr.length) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+module.exports = { startsWith, contains };

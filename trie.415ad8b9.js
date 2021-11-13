@@ -460,20 +460,20 @@ function hmrAcceptRun(bundle, id) {
 
 },{}],"9QTti":[function(require,module,exports) {
 const d3 = require('d3');
-const { updateTree  } = require('./graph');
-const { dictionary , toD3Tree  } = require('./trie-fns');
-const svg = d3.select('#chart').append('svg').attr('width', '100%').attr('height', '100%');
+const { parse  } = require('../trie');
+const { getToD3Tree , updateTree  } = require('./d3');
 const nodeSpacing = {
     x: 15,
     y: 50
 };
-const value = 'fruit\ndrain\ntrip\nanthem\nsolid\nin\ndock\ntribute\nkick\nsort\nso\nsquare\na\nthrive\n';
+const toD3Tree = getToD3Tree(0);
+const value = 'fruit\ndrain\ntrip\nanthem\ntake\nsolid\nin\ndock\ntribute\nkick\nsort\nso\nsquare\na\nthrive\n';
 d3.select('#input').property('value', value).on('input', (evt)=>{
-    updateTree(dictionary.parse(evt.target.value), toD3Tree, nodeSpacing, svg);
+    updateTree(toD3Tree(parse(evt.target.value)), nodeSpacing);
 });
-updateTree(dictionary.parse(value), toD3Tree, nodeSpacing, svg);
+updateTree(toD3Tree(parse(value)), nodeSpacing);
 
-},{"d3":"97vK6","./graph":"cQyvP","./trie-fns":"h6Lel"}],"97vK6":[function(require,module,exports) {
+},{"d3":"97vK6","../trie":"hrWt3","./d3":"bBWNw"}],"97vK6":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _d3Array = require("d3-array");
@@ -24501,94 +24501,7 @@ exports.default = function(event) {
     event.stopImmediatePropagation();
 };
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"cQyvP":[function(require,module,exports) {
-const d3 = require('d3');
-function updateTree(trie, toD3Tree, nodeSpacing, svg) {
-    const tree = d3.tree().nodeSize([
-        nodeSpacing.x,
-        nodeSpacing.y
-    ]);
-    const root = tree(d3.hierarchy(toD3Tree(trie)));
-    // The tree is 90 deg. rotated, so the x, y values are reversed from here on
-    let minX = Infinity;
-    let maxX = -minX;
-    root.each((d)=>{
-        if (d.x < minX) minX = d.x;
-        if (d.x > maxX) maxX = d.x;
-    });
-    const height = maxX - minX + nodeSpacing.x / 2;
-    let graph = svg.selectAll('g.graph').data([
-        true
-    ]);
-    const newGraph = graph.enter().append('g').classed('graph', ()=>true
-    ).merge(graph).attr('transform', ()=>`translate(${20},${2 / 3 * height})`
-    );
-    graph.exit().remove();
-    const nodes = newGraph.selectAll('g.node').data(root.descendants(), (d)=>`${d.data.name}-${d.data.isEndOfWord}-${d.depth}-${d.data.checked}`
-    );
-    const newNodes = nodes.enter().append('g').classed('node', ()=>true
-    );
-    newNodes.append('circle').attr('fill', '#aaa').attr('r', 3);
-    newNodes.append('text').text((d)=>d.data.name
-    ).attr('dy', '0.32em').attr('x', (d)=>d.children ? -6 : 6
-    ).attr('text-anchor', (d)=>d.children ? 'end' : 'start'
-    );
-    newNodes.merge(nodes).classed('word', (d)=>!!d.data.isEndOfWord
-    ).classed('checked-passed', (d)=>d.data.checked === 'passed'
-    ).classed('checked-failed', (d)=>d.data.checked === 'failed'
-    ).attr('transform', (d)=>`translate(${d.y},${d.x})`
-    );
-    nodes.exit().remove();
-    const links = newGraph.selectAll('path').data(root.links());
-    links.enter().append('path').attr('fill', 'none').attr('stroke', '#aaa').attr('stroke-opacity', 0.4).attr('stroke-width', 1.5).merge(links).attr('d', d3.linkHorizontal().x((d)=>d.y
-    ).y((d)=>d.x
-    ));
-    links.exit().remove();
-}
-module.exports = {
-    updateTree
-};
-
-},{"d3":"97vK6"}],"h6Lel":[function(require,module,exports) {
-const { alphabet , insert  } = require('../trie');
-const dictionary1 = (()=>{
-    function parse(text) {
-        const words = text.split('\n').filter((t)=>t.length > 0
-        );
-        return insertAll(words);
-    }
-    function insertAll(words) {
-        const dictionary = {
-            children: new Array(26)
-        };
-        words.forEach((word)=>{
-            insert(dictionary, word);
-        });
-        return dictionary;
-    }
-    return {
-        parse,
-        insertAll
-    };
-})();
-function toD3Tree(tree, name = '', d = 0) {
-    const node = {
-        name,
-        children: [],
-        isEndOfWord: tree.isEndOfWord,
-        checked: tree.checked
-    };
-    tree.children.forEach((child, i)=>{
-        node.children.push(toD3Tree(child, alphabet[i], d + 1));
-    });
-    return node;
-}
-module.exports = {
-    dictionary: dictionary1,
-    toD3Tree
-};
-
-},{"../trie":"hrWt3"}],"hrWt3":[function(require,module,exports) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"hrWt3":[function(require,module,exports) {
 // prettier-ignore
 const alphabet = [
     'a',
@@ -24618,7 +24531,35 @@ const alphabet = [
     'y',
     'z', 
 ];
-function insert(dictionary, word) {
+/**
+ * @typedef {{children: Trie[], isEndOfWord?: boolean}} Trie
+ */ /**
+ * Creates a new dictionary from the text
+ * @param {string} text
+ * @returns {Trie}
+ */ function parse(text) {
+    const words = text.split('\n').filter((t)=>t.length > 0
+    );
+    return insertAll(words);
+}
+/**
+ * Creates a new dictionary from a list of words
+ * @param {string[]} words
+ * @returns {Trie}
+ */ function insertAll(words) {
+    const dictionary = {
+        children: new Array(26)
+    };
+    words.forEach((word)=>{
+        insert(dictionary, word);
+    });
+    return dictionary;
+}
+/**
+ * Adds a word to the dictionary
+ * @param {Trie} dictionary
+ * @param {string} word
+ */ function insert(dictionary, word) {
     let current = dictionary;
     // For each character in the word...
     for(let i = 0; i < word.length; i++){
@@ -24634,30 +24575,31 @@ function insert(dictionary, word) {
     // The deepest child dictionary represents the last character in the word
     current.isEndOfWord = true;
 }
-function hasPrefix(tree, prefix) {
-    let current = tree;
+/**
+ * Returns true if the tree contains the prefix
+ * @param {Trie} tree
+ * @param {string} prefix
+ * @returns
+ */ function hasPrefix(tree, prefix) {
+    let node = tree;
     // For each character in the prefix...
     for(let i = 0; i < prefix.length; i++){
         const index = alphabet.indexOf(prefix[i]);
         // If there is no child tree, there
         // are no words starting with the prefix
-        if (!current.children[index]) return false;
-        current = current.children[index];
+        if (!node.children[index]) return false;
+        node = node.children[index];
     }
     // If child trees exist till the end of the
     // prefix, then the tree contains the prefix!
     return true;
 }
-function hasPrefix(root, prefix) {
-    let node = root;
-    for(let i = 0; i < prefix.length; i++){
-        const index = alphabet.indexOf(prefix[i]);
-        if (!node.children[index]) return false;
-        node = node.children[index];
-    }
-    return true;
-}
-function startsWith(dictionary, prefix) {
+/**
+ * Returns all the words in the dictionary that start with the prefix
+ * @param {Trie} dictionary
+ * @param {string} prefix
+ * @returns
+ */ function startsWith(dictionary, prefix) {
     let current = dictionary;
     // For each character in the prefix...
     for(let i = 0; i < prefix.length; i++){
@@ -24673,8 +24615,12 @@ function startsWith(dictionary, prefix) {
     collectWords(current, prefix, matches);
     return matches;
 }
-// Collects the words in the dictionary and its children into `words`
-function collectWords(dictionary, currentWord, words) {
+/**
+ * Collects all the words in the dictionary, prefixing them with `currentWord`
+ * @param {Trie} dictionary
+ * @param {string} currentWord
+ * @param {string[]} words
+ */ function collectWords(dictionary, currentWord, words) {
     // If the current dictionary is the end of the word, collect the word
     if (dictionary.isEndOfWord) words.push(currentWord);
     // Collect the words from each child dictionary
@@ -24682,24 +24628,93 @@ function collectWords(dictionary, currentWord, words) {
         collectWords(childNode, currentWord + alphabet[i], words);
     });
 }
-function contains(text, substr) {
-    for(let i = 0; i <= text.length - substr.length; i++){
-        let j = 0;
-        for(j = 0; j < substr.length; j++){
-            if (text[i + j] !== substr[j]) break;
-        }
-        if (j === substr.length) return true;
-    }
-    return false;
-}
 module.exports = {
     insert,
     startsWith,
-    contains,
     hasPrefix,
-    alphabet
+    alphabet,
+    parse,
+    insertAll
 };
 
-},{}]},["2IwvC","9QTti"], "9QTti", "parcelRequirefde0")
+},{}],"bBWNw":[function(require,module,exports) {
+const d3 = require('d3');
+const { alphabet  } = require('../trie');
+/**
+ * @typedef {{name: string, children: D3Tree[], isEndOfWord?: boolean, checked?: boolean}} D3Tree
+ */ const svg = d3.select('#chart').append('svg').attr('width', '100%').attr('height', '100%');
+/**
+ * Returns a function that converts a tree to a D3-friendly version
+ * @param {number} maxDepth Maximum depth where to put the full words (should be 0 for a regular prefix)
+ * @returns {(tree: any, name?: string, depth?: number) => D3Tree}
+ */ function getToD3Tree(maxDepth = 0) {
+    return function toD3Tree(tree, name = '', depth = 0) {
+        if (maxDepth && depth === maxDepth + 1) return {
+            name: tree,
+            children: []
+        };
+        const node = {
+            name,
+            children: [],
+            isEndOfWord: tree.isEndOfWord,
+            checked: tree.checked
+        };
+        (maxDepth === 1 ? tree : tree.children).forEach((child, i)=>{
+            node.children.push(toD3Tree(child, alphabet[i], depth + 1));
+        });
+        return node;
+    };
+}
+/**
+ * Renders the tree
+ * @param {D3Tree} tree
+ * @param {{x:number, y:number}} nodeSpacing
+ */ function updateTree(tree, nodeSpacing) {
+    const root = d3.tree().nodeSize([
+        nodeSpacing.x,
+        nodeSpacing.y
+    ])(d3.hierarchy(tree));
+    // The tree is 90 deg. rotated, so the x, y values are reversed from here on
+    let minX = Infinity;
+    let maxX = -minX;
+    root.each((d)=>{
+        if (d.x < minX) minX = d.x;
+        if (d.x > maxX) maxX = d.x;
+    });
+    const height = maxX - minX + nodeSpacing.x / 2;
+    let graph = svg.selectAll('g.graph').data([
+        true
+    ]);
+    const newGraph = graph.enter().append('g').classed('graph', ()=>true
+    ).merge(graph).attr('transform', ()=>`translate(${20},${0.6 * height})`
+    );
+    graph.exit().remove();
+    const nodes = newGraph.selectAll('g.node').data(root.descendants(), (d)=>`${d.data.name}-${d.data.isEndOfWord}-${d.depth}-${d.data.checked}`
+    );
+    const newNodes = nodes.enter().append('g').classed('node', ()=>true
+    );
+    newNodes.append('circle').attr('fill', '#aaa').attr('r', 3);
+    newNodes.append('text').text((d)=>d.data.name
+    ).attr('dy', '0.32em').attr('x', (d)=>d.children ? -6 : 6
+    ).attr('text-anchor', (d)=>d.children ? 'end' : 'start'
+    );
+    newNodes.merge(nodes).classed('word', (d)=>!!d.data.isEndOfWord
+    ).classed('checked-passed', (d)=>d.data.checked === 'passed'
+    ).classed('checked-failed', (d)=>d.data.checked === 'failed'
+    ).attr('transform', (d)=>`translate(${d.y},${d.x})`
+    );
+    nodes.exit().remove();
+    const links = newGraph.selectAll('path').data(root.links());
+    links.enter().append('path').attr('fill', 'none').attr('stroke', '#aaa').attr('stroke-opacity', 0.4).attr('stroke-width', 1.5).merge(links).attr('d', d3.linkHorizontal().x((d)=>d.y
+    ).y((d)=>d.x
+    ));
+    links.exit().remove();
+}
+module.exports = {
+    updateTree,
+    getToD3Tree
+};
+
+},{"d3":"97vK6","../trie":"hrWt3"}]},["2IwvC","9QTti"], "9QTti", "parcelRequirefde0")
 
 //# sourceMappingURL=trie.415ad8b9.js.map

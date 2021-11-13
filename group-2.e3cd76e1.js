@@ -460,53 +460,20 @@ function hmrAcceptRun(bundle, id) {
 
 },{}],"aI8wb":[function(require,module,exports) {
 const d3 = require('d3');
-const { alphabet  } = require('../trie');
-const { insert  } = require('../two-level-word-check');
-const { updateTree  } = require('./graph');
-const dictionary1 = (()=>{
-    function parse(text) {
-        const words = text.split('\n').filter((t)=>t.length > 0
-        );
-        const dictionary = {
-            children: new Array(26)
-        };
-        words.forEach((word)=>{
-            insert(dictionary, word);
-        });
-        return dictionary;
-    }
-    return {
-        parse
-    };
-})();
-const svg = d3.select('#chart').append('svg').attr('width', '100%').attr('height', '100%');
-function toD3Tree(tree, name = '', d = 0) {
-    // At depth 2, the tree is a word
-    if (d === 3) return {
-        name: tree,
-        children: []
-    };
-    const node = {
-        name,
-        children: [],
-        isEndOfWord: tree.isEndOfWord
-    };
-    tree.children.forEach((child, i)=>{
-        node.children.push(toD3Tree(child, alphabet[i], d + 1));
-    });
-    return node;
-}
+const { parse  } = require('../group-2');
+const { getToD3Tree , updateTree  } = require('./d3');
+const toD3Tree = getToD3Tree(2);
 const nodeSpacing = {
     x: 15,
     y: 100
 };
-const value = 'fruit\ndrain\ntrip\nanthem\nelbow\nsolid\nin\nappliance\ndock\ntribute\nkick\nsort\nso\nsquare\neloquent\na\nthrive\n';
+const value = 'fruit\ndrain\ntrip\nanthem\nelbow\nsolid\nin\nappliance\ndock\ntribute\nsort\nso\nsquare\neloquent\na\nthrive\n';
 d3.select('#input').property('value', value).on('input', (evt)=>{
-    updateTree(dictionary1.parse(evt.target.value), toD3Tree, nodeSpacing, svg);
+    updateTree(toD3Tree(parse(evt.target.value)), nodeSpacing);
 });
-updateTree(dictionary1.parse(value), toD3Tree, nodeSpacing, svg);
+updateTree(toD3Tree(parse(value)), nodeSpacing);
 
-},{"d3":"97vK6","../trie":"hrWt3","../two-level-word-check":"9ojPg","./graph":"cQyvP"}],"97vK6":[function(require,module,exports) {
+},{"d3":"97vK6","../group-2":"aLIZE","./d3":"bBWNw"}],"97vK6":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _d3Array = require("d3-array");
@@ -24534,7 +24501,7 @@ exports.default = function(event) {
     event.stopImmediatePropagation();
 };
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"hrWt3":[function(require,module,exports) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"aLIZE":[function(require,module,exports) {
 // prettier-ignore
 const alphabet = [
     'a',
@@ -24564,119 +24531,32 @@ const alphabet = [
     'y',
     'z', 
 ];
-function insert(dictionary, word) {
-    let current = dictionary;
-    // For each character in the word...
-    for(let i = 0; i < word.length; i++){
-        // Create a new child dictionary for this character
-        const index = alphabet.indexOf(word[i]);
-        if (!current.children[index]) current.children[index] = {
-            isEndOfWord: false,
-            children: new Array(26)
-        };
-        // Update the current child dictionary
-        current = current.children[index];
-    }
-    // The deepest child dictionary represents the last character in the word
-    current.isEndOfWord = true;
-}
-function hasPrefix(tree, prefix) {
-    let current = tree;
-    // For each character in the prefix...
-    for(let i = 0; i < prefix.length; i++){
-        const index = alphabet.indexOf(prefix[i]);
-        // If there is no child tree, there
-        // are no words starting with the prefix
-        if (!current.children[index]) return false;
-        current = current.children[index];
-    }
-    // If child trees exist till the end of the
-    // prefix, then the tree contains the prefix!
-    return true;
-}
-function hasPrefix(root, prefix) {
-    let node = root;
-    for(let i = 0; i < prefix.length; i++){
-        const index = alphabet.indexOf(prefix[i]);
-        if (!node.children[index]) return false;
-        node = node.children[index];
-    }
-    return true;
-}
-function startsWith(dictionary, prefix) {
-    let current = dictionary;
-    // For each character in the prefix...
-    for(let i = 0; i < prefix.length; i++){
-        const index = alphabet.indexOf(prefix[i]);
-        // If there is no child dictionary, there
-        // are no words starting with the prefix
-        if (!current.children[index]) return [];
-        current = current.children[index];
-    }
-    // At the end of the prefix, we collect the words
-    // in the current child dictionary and its children
-    const matches = [];
-    collectWords(current, prefix, matches);
-    return matches;
-}
-// Collects the words in the dictionary and its children into `words`
-function collectWords(dictionary, currentWord, words) {
-    // If the current dictionary is the end of the word, collect the word
-    if (dictionary.isEndOfWord) words.push(currentWord);
-    // Collect the words from each child dictionary
-    dictionary.children.forEach((childNode, i)=>{
-        collectWords(childNode, currentWord + alphabet[i], words);
+/**
+ * A Node in the dictionary
+ * @typedef {{children: (Trie[]), isEndOfWord?: boolean}} Trie
+ */ /**
+ * Creates a new dictionary from the text
+ * @param {string} text
+ * @returns {Trie}
+ */ function parse(text) {
+    const words = text.split('\n').filter((t)=>t.length > 0
+    );
+    const dictionary = {
+        children: new Array(26)
+    };
+    words.forEach((word)=>{
+        insert(dictionary, word);
     });
+    return dictionary;
 }
-function contains(text, substr) {
-    for(let i = 0; i <= text.length - substr.length; i++){
-        let j = 0;
-        for(j = 0; j < substr.length; j++){
-            if (text[i + j] !== substr[j]) break;
-        }
-        if (j === substr.length) return true;
-    }
-    return false;
-}
-module.exports = {
-    insert,
-    startsWith,
-    contains,
-    hasPrefix,
-    alphabet
-};
-
-},{}],"9ojPg":[function(require,module,exports) {
-// prettier-ignore
-const alphabet = [
-    'a',
-    'b',
-    'c',
-    'd',
-    'e',
-    'f',
-    'g',
-    'h',
-    'i',
-    'j',
-    'k',
-    'l',
-    'm',
-    'n',
-    'o',
-    'p',
-    'q',
-    'r',
-    's',
-    't',
-    'u',
-    'v',
-    'w',
-    'x',
-    'y',
-    'z', 
-];
-function insert(dictionary, word) {
+/**
+ * Adds the word into the dictionary. At the second level
+ * of the tree, it adds the word as a child node.
+ *
+ * @param {Trie} dictionary
+ * @param {string} word
+ * @returns
+ */ function insert(dictionary, word) {
     // As we go deeper into the dictionary, we need to keep track
     // of the current level we're on, starting from the root dictionary
     let current = dictionary;
@@ -24709,38 +24589,48 @@ function insert(dictionary, word) {
     // The word has more than two characters, push it to the current child dictionary
     current.children.push(word);
 }
-function startsWith(dictionary, prefix) {
-    const matches = [];
-    let current = dictionary;
-    if (prefix.length > 2) {
-        const grandChild = dictionary.children[alphabet.indexOf(prefix[0])].children[alphabet.indexOf(prefix[1])];
-        return getMatches(grandChild, prefix);
-    }
-    return matches;
-}
-// Returns the prefix matches from a list
-function getMatches(dictionary, prefix) {
-    const matches = [];
-    for(let i = 0; i < dictionary.length; i++){
-        const word = dictionary[i];
-        let prefixed = true;
-        for(let j = 0; j < prefix.length; j++)if (prefix[j] !== word[j]) prefixed = false;
-        if (prefixed) matches.push(word);
-    }
-    return matches;
-}
 module.exports = {
-    insert
+    insert,
+    parse
 };
 
-},{}],"cQyvP":[function(require,module,exports) {
+},{}],"bBWNw":[function(require,module,exports) {
 const d3 = require('d3');
-function updateTree(trie, toD3Tree, nodeSpacing, svg) {
-    const tree = d3.tree().nodeSize([
+const { alphabet  } = require('../trie');
+/**
+ * @typedef {{name: string, children: D3Tree[], isEndOfWord?: boolean, checked?: boolean}} D3Tree
+ */ const svg = d3.select('#chart').append('svg').attr('width', '100%').attr('height', '100%');
+/**
+ * Returns a function that converts a tree to a D3-friendly version
+ * @param {number} maxDepth Maximum depth where to put the full words (should be 0 for a regular prefix)
+ * @returns {(tree: any, name?: string, depth?: number) => D3Tree}
+ */ function getToD3Tree(maxDepth = 0) {
+    return function toD3Tree(tree, name = '', depth = 0) {
+        if (maxDepth && depth === maxDepth + 1) return {
+            name: tree,
+            children: []
+        };
+        const node = {
+            name,
+            children: [],
+            isEndOfWord: tree.isEndOfWord,
+            checked: tree.checked
+        };
+        (maxDepth === 1 ? tree : tree.children).forEach((child, i)=>{
+            node.children.push(toD3Tree(child, alphabet[i], depth + 1));
+        });
+        return node;
+    };
+}
+/**
+ * Renders the tree
+ * @param {D3Tree} tree
+ * @param {{x:number, y:number}} nodeSpacing
+ */ function updateTree(tree, nodeSpacing) {
+    const root = d3.tree().nodeSize([
         nodeSpacing.x,
         nodeSpacing.y
-    ]);
-    const root = tree(d3.hierarchy(toD3Tree(trie)));
+    ])(d3.hierarchy(tree));
     // The tree is 90 deg. rotated, so the x, y values are reversed from here on
     let minX = Infinity;
     let maxX = -minX;
@@ -24753,7 +24643,7 @@ function updateTree(trie, toD3Tree, nodeSpacing, svg) {
         true
     ]);
     const newGraph = graph.enter().append('g').classed('graph', ()=>true
-    ).merge(graph).attr('transform', ()=>`translate(${20},${2 / 3 * height})`
+    ).merge(graph).attr('transform', ()=>`translate(${20},${0.6 * height})`
     );
     graph.exit().remove();
     const nodes = newGraph.selectAll('g.node').data(root.descendants(), (d)=>`${d.data.name}-${d.data.isEndOfWord}-${d.depth}-${d.data.checked}`
@@ -24778,9 +24668,146 @@ function updateTree(trie, toD3Tree, nodeSpacing, svg) {
     links.exit().remove();
 }
 module.exports = {
-    updateTree
+    updateTree,
+    getToD3Tree
 };
 
-},{"d3":"97vK6"}]},["b8nmP","aI8wb"], "aI8wb", "parcelRequirefde0")
+},{"d3":"97vK6","../trie":"hrWt3"}],"hrWt3":[function(require,module,exports) {
+// prettier-ignore
+const alphabet = [
+    'a',
+    'b',
+    'c',
+    'd',
+    'e',
+    'f',
+    'g',
+    'h',
+    'i',
+    'j',
+    'k',
+    'l',
+    'm',
+    'n',
+    'o',
+    'p',
+    'q',
+    'r',
+    's',
+    't',
+    'u',
+    'v',
+    'w',
+    'x',
+    'y',
+    'z', 
+];
+/**
+ * @typedef {{children: Trie[], isEndOfWord?: boolean}} Trie
+ */ /**
+ * Creates a new dictionary from the text
+ * @param {string} text
+ * @returns {Trie}
+ */ function parse(text) {
+    const words = text.split('\n').filter((t)=>t.length > 0
+    );
+    return insertAll(words);
+}
+/**
+ * Creates a new dictionary from a list of words
+ * @param {string[]} words
+ * @returns {Trie}
+ */ function insertAll(words) {
+    const dictionary = {
+        children: new Array(26)
+    };
+    words.forEach((word)=>{
+        insert(dictionary, word);
+    });
+    return dictionary;
+}
+/**
+ * Adds a word to the dictionary
+ * @param {Trie} dictionary
+ * @param {string} word
+ */ function insert(dictionary, word) {
+    let current = dictionary;
+    // For each character in the word...
+    for(let i = 0; i < word.length; i++){
+        // Create a new child dictionary for this character
+        const index = alphabet.indexOf(word[i]);
+        if (!current.children[index]) current.children[index] = {
+            isEndOfWord: false,
+            children: new Array(26)
+        };
+        // Update the current child dictionary
+        current = current.children[index];
+    }
+    // The deepest child dictionary represents the last character in the word
+    current.isEndOfWord = true;
+}
+/**
+ * Returns true if the tree contains the prefix
+ * @param {Trie} tree
+ * @param {string} prefix
+ * @returns
+ */ function hasPrefix(tree, prefix) {
+    let node = tree;
+    // For each character in the prefix...
+    for(let i = 0; i < prefix.length; i++){
+        const index = alphabet.indexOf(prefix[i]);
+        // If there is no child tree, there
+        // are no words starting with the prefix
+        if (!node.children[index]) return false;
+        node = node.children[index];
+    }
+    // If child trees exist till the end of the
+    // prefix, then the tree contains the prefix!
+    return true;
+}
+/**
+ * Returns all the words in the dictionary that start with the prefix
+ * @param {Trie} dictionary
+ * @param {string} prefix
+ * @returns
+ */ function startsWith(dictionary, prefix) {
+    let current = dictionary;
+    // For each character in the prefix...
+    for(let i = 0; i < prefix.length; i++){
+        const index = alphabet.indexOf(prefix[i]);
+        // If there is no child dictionary, there
+        // are no words starting with the prefix
+        if (!current.children[index]) return [];
+        current = current.children[index];
+    }
+    // At the end of the prefix, we collect the words
+    // in the current child dictionary and its children
+    const matches = [];
+    collectWords(current, prefix, matches);
+    return matches;
+}
+/**
+ * Collects all the words in the dictionary, prefixing them with `currentWord`
+ * @param {Trie} dictionary
+ * @param {string} currentWord
+ * @param {string[]} words
+ */ function collectWords(dictionary, currentWord, words) {
+    // If the current dictionary is the end of the word, collect the word
+    if (dictionary.isEndOfWord) words.push(currentWord);
+    // Collect the words from each child dictionary
+    dictionary.children.forEach((childNode, i)=>{
+        collectWords(childNode, currentWord + alphabet[i], words);
+    });
+}
+module.exports = {
+    insert,
+    startsWith,
+    hasPrefix,
+    alphabet,
+    parse,
+    insertAll
+};
+
+},{}]},["b8nmP","aI8wb"], "aI8wb", "parcelRequirefde0")
 
 //# sourceMappingURL=group-2.e3cd76e1.js.map

@@ -598,8 +598,8 @@ canvasElement.addEventListener('keydown', (event)=>{
 });
 
 },{"get-pixels":"7twXd","../image-quadtree":"d4ISs"}],"7twXd":[function(require,module,exports) {
-var process = require("process");
 var Buffer = require("buffer").Buffer;
+var process = require("process");
 'use strict';
 var path = require('path');
 var ndarray = require('ndarray');

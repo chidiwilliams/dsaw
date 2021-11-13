@@ -4,11 +4,12 @@
   "description": "Demos for \"Data Structures and Algorithms in the Wild\"",
   "scripts": {
     "clean": "rm -rf .parcel-cache && rm -rf dist",
-    "build": "npm run clean && npm run build:quadtrees && npm run build:tries",
-    "build:quadtrees": "parcel build quadtrees/demos/*.html --dist-dir dist/quadtrees --public-url .",
-    "build:tries": "parcel build tries/demos/*.html --dist-dir dist/tries --public-url .",
-    "deploy": "npm run build && gh-pages -d dist",
-    "dev:tries": "parcel tries/demos/*.html",
+    "build": "npm run build:index && npm run build:quadtrees && npm run build:tries",
+    "build:index": "parcel build index.html --dist-dir dist --public-url .",
+    "build:quadtrees": "parcel build quadtrees/demos/*.html --dist-dir dist/quadtrees/demos --public-url .",
+    "build:tries": "parcel build tries/demos/*.html --dist-dir dist/tries/demos --public-url .",
+    "deploy": "npm run clean && npm run build && gh-pages -d dist",
+    "dev": "parcel index.html",
     "test": "node quadtrees/*.test.js && node tries/*.test.js"
   },
   "repository": {

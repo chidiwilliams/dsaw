@@ -598,8 +598,8 @@ canvasElement.addEventListener('keydown', (event)=>{
 });
 
 },{"get-pixels":"7twXd","../image-quadtree":"d4ISs"}],"7twXd":[function(require,module,exports) {
-var Buffer = require("buffer").Buffer;
 var process = require("process");
+var Buffer = require("buffer").Buffer;
 'use strict';
 var path = require('path');
 var ndarray = require('ndarray');
@@ -6490,8 +6490,8 @@ Object.defineProperty(Duplex.prototype, 'destroyed', {
 });
 
 },{"process":"lDnB8","./_stream_readable":"cOmIG","./_stream_writable":"8Zkyc","inherits":"d3hL2"}],"8Zkyc":[function(require,module,exports) {
-var process = require("process");
 var global = arguments[3];
+var process = require("process");
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a

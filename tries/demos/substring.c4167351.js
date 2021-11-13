@@ -24551,7 +24551,7 @@ const alphabet = [
     'z', 
 ];
 /**
- * @typedef {{children: Trie[], isEndOfWord?: boolean}} Trie
+ * @typedef {{children: Trie[], isEndOfWord?: boolean, checked?: string }} Trie
  */ /**
  * Creates a new dictionary from the text
  * @param {string} text
@@ -24606,8 +24606,12 @@ const alphabet = [
         const index = alphabet.indexOf(prefix[i]);
         // If there is no child tree, there
         // are no words starting with the prefix
-        if (!node.children[index]) return false;
+        if (!node.children[index]) {
+            node.checked = 'failed';
+            return false;
+        }
         node = node.children[index];
+        node.checked = 'passed';
     }
     // If child trees exist till the end of the
     // prefix, then the tree contains the prefix!
